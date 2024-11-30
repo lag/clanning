@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+
+# Environment variables
+.env
+
+# System files
+.DS_Store
+
+# Local data
+history/
+manual_history/
+last_error.txt
+last_update.txt
