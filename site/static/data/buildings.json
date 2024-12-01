@@ -1,0 +1,296 @@
+{
+    "home": {
+        "gold_storage": {
+            "1": {
+                "storage_capacity": 1500,
+                "hitpoints": 400,
+                "build_cost": 300,
+                "build_time": 10,
+                "exp_gained": 3,
+                "town_hall_level_required": 1
+            },
+            "2": {
+                "storage_capacity": 3000,
+                "hitpoints": 600,
+                "build_cost": 750,
+                "build_time": 300,
+                "exp_gained": 17,
+                "town_hall_level_required": 2
+            },
+            "3": {
+                "storage_capacity": 6000,
+                "hitpoints": 800,
+                "build_cost": 1500,
+                "build_time": 1200,
+                "exp_gained": 34,
+                "town_hall_level_required": 2
+            },
+            "4": {
+                "storage_capacity": 12000,
+                "hitpoints": 1000,
+                "build_cost": 3000,
+                "build_time": 3600,
+                "exp_gained": 60,
+                "town_hall_level_required": 3
+            },
+            "5": {
+                "storage_capacity": 25000,
+                "hitpoints": 1200,
+                "build_cost": 6000,
+                "build_time": 7200,
+                "exp_gained": 84,
+                "town_hall_level_required": 3
+            },
+            "6": {
+                "storage_capacity": 45000,
+                "hitpoints": 1400,
+                "build_cost": 12000,
+                "build_time": 10800,
+                "exp_gained": 103,
+                "town_hall_level_required": 3
+            },
+            "7": {
+                "storage_capacity": 100000,
+                "hitpoints": 1600,
+                "build_cost": 25000,
+                "build_time": 14400,
+                "exp_gained": 120,
+                "town_hall_level_required": 4
+            },
+            "8": {
+                "storage_capacity": 225000,
+                "hitpoints": 1700,
+                "build_cost": 50000,
+                "build_time": 18000,
+                "exp_gained": 134,
+                "town_hall_level_required": 4
+            },
+            "9": {
+                "storage_capacity": 450000,
+                "hitpoints": 1800,
+                "build_cost": 100000,
+                "build_time": 28800,
+                "exp_gained": 169,
+                "town_hall_level_required": 5
+            },
+            "10": {
+                "storage_capacity": 850000,
+                "hitpoints": 1900,
+                "build_cost": 250000,
+                "build_time": 43200,
+                "exp_gained": 207,
+                "town_hall_level_required": 6
+            },
+            "11": {
+                "storage_capacity": 1750000,
+                "hitpoints": 2100,
+                "build_cost": 500000,
+                "build_time": 57600,
+                "exp_gained": 240,
+                "town_hall_level_required": 7
+            },
+            "12": {
+                "storage_capacity": 2000000,
+                "hitpoints": 2500,
+                "build_cost": 1000000,
+                "build_time": 86400,
+                "exp_gained": 293,
+                "town_hall_level_required": 11
+            },
+            "13": {
+                "storage_capacity": 3000000,
+                "hitpoints": 2900,
+                "build_cost": 1800000,
+                "build_time": 172800,
+                "exp_gained": 415,
+                "town_hall_level_required": 12
+            },
+            "14": {
+                "storage_capacity": 4000000,
+                "hitpoints": 3300,
+                "build_cost": 2800000,
+                "build_time": 259200,
+                "exp_gained": 509,
+                "town_hall_level_required": 13
+            },
+            "15": {
+                "storage_capacity": 4500000,
+                "hitpoints": 3700,
+                "build_cost": 3000000,
+                "build_time": 345600,
+                "exp_gained": 587,
+                "town_hall_level_required": 14
+            },
+            "16": {
+                "storage_capacity": 5000000,
+                "hitpoints": 3900,
+                "build_cost": 4000000,
+                "build_time": 518400,
+                "exp_gained": 720,
+                "town_hall_level_required": 15
+            },
+            "17": {
+                "storage_capacity": 5250000,
+                "hitpoints": 4050,
+                "build_cost": 5500000,
+                "build_time": 777600,
+                "exp_gained": 881,
+                "town_hall_level_required": 16
+            },
+            "18": {
+                "storage_capacity": 5500000,
+                "hitpoints": 4200,
+                "build_cost": 10000000,
+                "build_time": 1080000,
+                "exp_gained": 1039,
+                "town_hall_level_required": 17
+            }
+        },
+        "elixir_storage": {
+            "1": {
+                "storage_capacity": 1500,
+                "hitpoints": 400,
+                "build_cost": 300,
+                "build_time": 10,
+                "exp_gained": 3,
+                "town_hall_level_required": 1
+            },
+            "2": {
+                "storage_capacity": 3000,
+                "hitpoints": 600,
+                "build_cost": 750,
+                "build_time": 300,
+                "exp_gained": 17,
+                "town_hall_level_required": 2
+            },
+            "3": {
+                "storage_capacity": 6000,
+                "hitpoints": 800,
+                "build_cost": 1500,
+                "build_time": 1200,
+                "exp_gained": 34,
+                "town_hall_level_required": 2
+            },
+            "4": {
+                "storage_capacity": 12000,
+                "hitpoints": 1000,
+                "build_cost": 3000,
+                "build_time": 3600,
+                "exp_gained": 60,
+                "town_hall_level_required": 3
+            },
+            "5": {
+                "storage_capacity": 25000,
+                "hitpoints": 1200,
+                "build_cost": 6000,
+                "build_time": 7200,
+                "exp_gained": 84,
+                "town_hall_level_required": 3
+            },
+            "6": {
+                "storage_capacity": 45000,
+                "hitpoints": 1400,
+                "build_cost": 12000,
+                "build_time": 10800,
+                "exp_gained": 103,
+                "town_hall_level_required": 3
+            },
+            "7": {
+                "storage_capacity": 100000,
+                "hitpoints": 1600,
+                "build_cost": 25000,
+                "build_time": 14400,
+                "exp_gained": 120,
+                "town_hall_level_required": 4
+            },
+            "8": {
+                "storage_capacity": 225000,
+                "hitpoints": 1700,
+                "build_cost": 50000,
+                "build_time": 18000,
+                "exp_gained": 134,
+                "town_hall_level_required": 4
+            },
+            "9": {
+                "storage_capacity": 450000,
+                "hitpoints": 1800,
+                "build_cost": 100000,
+                "build_time": 28800,
+                "exp_gained": 169,
+                "town_hall_level_required": 5
+            },
+            "10": {
+                "storage_capacity": 850000,
+                "hitpoints": 1900,
+                "build_cost": 250000,
+                "build_time": 43200,
+                "exp_gained": 207,
+                "town_hall_level_required": 6
+            },
+            "11": {
+                "storage_capacity": 1750000,
+                "hitpoints": 2100,
+                "build_cost": 500000,
+                "build_time": 57600,
+                "exp_gained": 240,
+                "town_hall_level_required": 7
+            },
+            "12": {
+                "storage_capacity": 2000000,
+                "hitpoints": 2500,
+                "build_cost": 1000000,
+                "build_time": 86400,
+                "exp_gained": 293,
+                "town_hall_level_required": 11
+            },
+            "13": {
+                "storage_capacity": 3000000,
+                "hitpoints": 2900,
+                "build_cost": 1800000,
+                "build_time": 172800,
+                "exp_gained": 415,
+                "town_hall_level_required": 12
+            },
+            "14": {
+                "storage_capacity": 4000000,
+                "hitpoints": 3300,
+                "build_cost": 2800000,
+                "build_time": 259200,
+                "exp_gained": 509,
+                "town_hall_level_required": 13
+            },
+            "15": {
+                "storage_capacity": 4500000,
+                "hitpoints": 3700,
+                "build_cost": 3000000,
+                "build_time": 345600,
+                "exp_gained": 587,
+                "town_hall_level_required": 14
+            },
+            "16": {
+                "storage_capacity": 5000000,
+                "hitpoints": 3900,
+                "build_cost": 4000000,
+                "build_time": 518400,
+                "exp_gained": 720,
+                "town_hall_level_required": 15
+            },
+            "17": {
+                "storage_capacity": 5250000,
+                "hitpoints": 4050,
+                "build_cost": 5500000,
+                "build_time": 777600,
+                "exp_gained": 881,
+                "town_hall_level_required": 16
+            },
+            "18": {
+                "storage_capacity": 5500000,
+                "hitpoints": 4200,
+                "build_cost": 10000000,
+                "build_time": 1080000,
+                "exp_gained": 1039,
+                "town_hall_level_required": 17
+            }
+        }
+    }
+}

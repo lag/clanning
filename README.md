@@ -6,6 +6,13 @@ A FastAPI-based service that tracks and retrieves historical player data for my 
 - View historical changes in player progression
 - Track resource, building, and clan changes over time
 
+You can view my version of the site at [clann.ing](https://clann.ing). This has my accounts being tracked.
+
+## This project is currently in very early development.
+
+File formats may change at any time and support for updating old files is not guaranteed outside of historical data from Clash of ClansAPI calls.
+Also, very little error handling and vulnerability testing has been done. Use at your own risk.
+
 ## Overview
 
 The API maintains a historical record of player snapshots, allowing users to see how accounts have evolved over time. Each snapshot captures the complete state of a player's account, including:
@@ -54,7 +61,13 @@ pip install -r requirements.txt
 python update_players.py
 ```
 
-6. In another window, run the web server.
+6. Open another window and download images needed for the site using the [Clash of Clans Wiki](https://clashofclans.fandom.com/wiki/Clash_of_Clans_Wiki). This may take a while.
+
+```bash
+python download_images.py
+```
+
+7. In another window, run the web server.
 
 ### Running the Web Server
 
@@ -79,14 +92,20 @@ clanning/
 ├── last_error.txt                # Timestamp of last error (for debugging)
 ├── last_update.txt               # Timestamp of last update (for debugging)
 ├── history/                      # Historical player data
-│   └── {player}/                 # Player directory
+│   └── {player tag}/             # Player directory
 │       └── {hash}.json           # Player data snapshot
 ├── manualhistory/                # Historical manual data
-│   └── {player}/                 # Player directory
+│   └── {player tag}/             # Player directory
 │       └── {hash}.json           # Player data snapshot
 └── site/
     ├── server.py                 # Used to launch the FastAPI app
     ├── app.py                    # FastAPI app
-    └── templates/                # Jinja2 templates
-        └── index.html            # Simple landing page
+    ├── templates/                # Jinja2 templates
+    │   ├── base.html             # Base template for all pages
+    │   ├── index.html            # Simple landing page
+    │   ├── player.html           # Player page
+    │   └── players.html          # Player list page
+    └── static/                   # Static files
+        ├── data/...              # JSON data files for site (buildings, storages, etc.)
+        └── images/...            # Images (buildings, heroes, troops, etc.)
 ```

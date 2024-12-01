@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}{{player_data.player.name}} ({{player_data.player.tag}}){% endblock %}
+
+{% block content %}
+<div style="display: flex; gap: 20px;">
+    <div style="flex: 2;">
+        <h1>{{player_data.player.name}} ({{player_data.player.tag}})</h1>
+
+        <div>
+            <h2>Player</h2>
+            {% for key in ['townHallLevel', 'expLevel', 'trophies', 'bestTrophies', 'warStars', 'attackWins', 'defenseWins', 'builderBaseTrophies', 'bestBuilderBaseTrophies', 'donations', 'donationsReceived', 'clanCapitalContributions'] %}
+                <p>{{key}}: {{player_data.player[key]}}</p>
+            {% endfor %}
+        </div>
+
+        <div>
+            <h2>Buildings</h2>
+            <p>Left click on a building to mark as upgraded and right click to add a note of the upgrade starting with the new level.</p>
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;">
+            {% for building in buildings_data.buildings %}
+                <div style="border: 1px solid black; padding: 10px; width: 192px; display: flex; flex-direction: row; align-items: center;">
+                    <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name.replace(" ","_").replace("'","")}}/{{building.level}}.png" alt="{{building.name}}">
+                    <div onclick="selectItem('build',{{building}})" data-info='{{building|tojson|safe}}' data-type="build">
+                        <p>{{building.id}} - {{building.name}}: {{building.level}}</p>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+
+        <div>
+            <h2>Troops</h2>
+            <p>Right click to add a note of the upgrade starting with the new level. No need to mark as upgraded as the API will reflect this.</p>
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;">
+            {% for troop in player_data.player.troops %}
+                {% if troop.village == 'home' and troop.name in ["Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"] %}
+                    <div style="border: 1px solid black; padding: 10px; width: 192px; display: flex; flex-direction: row; align-items: center;">
+                        <img height="64" src="/static/images/{{troop.village}}/troops/{{troop.name.replace(" ","_").replace(".","")}}/avatar.png" alt="{{troop.name}}">
+                        <div onclick="selectItem('troop','{{troop.name}}')" data-info='{{troop|tojson|safe}}' data-type="troop">
+                            <p> {{troop.name}}: {{troop.level}}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div style="flex: 1; position: sticky; top: 20px; align-self: flex-start;">
+
+        <h2>Note Builder</h2>
+        <p>This must be manually added to the historical file until authentication is implemented.</p>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="number" 
+                   id="gold-input" 
+                   placeholder="Gold" 
+                   style="width: 100px;"
+                   onchange="updateResource('gold', 'home', this.value)">
+            <input type="number" 
+                   id="elixir-input" 
+                   placeholder="Elixir" 
+                   style="width: 100px;"
+                   onchange="updateResource('elixir', 'home', this.value)">
+            <input type="number" 
+                   id="dark-elixir-input" 
+                   placeholder="Dark Elixir" 
+                   style="width: 100px;"
+                   onchange="updateResource('dark_elixir', 'home', this.value)">
+            <input type="number" 
+                   id="gems-input" 
+                   placeholder="Gems" 
+                   style="width: 100px;"
+                   onchange="updateResource('gems', null, this.value)">
+        </div>
+
+        <textarea readonly id="note-builder" style="width: 100%; height: 500px;" placeholder="Start interaction and note will generate here!"></textarea>
+    </div>
+    <script>
+        // Constants and initial state
+        const current_buildings = {{buildings_data.buildings|tojson|safe}};
+        const storages = {{GLOBAL_STORAGE_DATA|tojson|safe}};
+        
+        const STORAGE_TYPES = {
+            home: {
+                GOLD: 'Gold Storage',
+                ELIXIR: 'Elixir Storage',
+                TOWN_HALL: 'Town Hall'
+            },
+            builder_base: {
+                GOLD: 'Gold Storage',
+                ELIXIR: 'Elixir Storage',
+                BUILDER_HALL: 'Builder Hall'
+            }
+        };
+    
+        const state = {
+            note: {
+                buildings: [],
+                notes: [],
+                resources: {
+                    home: {},
+                    builder_base: {},
+                    gems: 0  // Move gems to top level
+                }
+            },
+            resources: {
+                home: {
+                    gold: 0,
+                    elixir: 0,
+                    dark_elixir: 0
+                },
+                builder_base: {
+                    gold: 0,
+                    elixir: 0
+                },
+                gems: 0  // Move gems to top level
+            }
+        };
+    
+        // Initialize
+        computeStorages();
+    
+        // Resource handling
+        function updateResource(type, village, value) {
+            if (type === 'gems') {
+                state.resources.gems = parseInt(value) || 0;
+                updateNote();
+            } else {
+                state.resources[village][type] = parseInt(value) || 0;
+                computeStorages(village);
+                updateNote();
+            }
+        }
+    
+        function computeStorages(village = 'home') { // TODO: Add builder_base
+            const storageBuildings = {
+                goldStorages: [],
+                elixirStorages: [],
+                townHalls: []  // or builderHalls for builder_base
+            };
+            
+            // Collect current storage buildings
+            current_buildings.forEach(building => {
+                if (building.village !== village) return;
+                
+                if (building.name === STORAGE_TYPES[village].GOLD) {
+                    storageBuildings.goldStorages.push({id: building.id, level: building.level});
+                } else if (building.name === STORAGE_TYPES[village].ELIXIR) {
+                    storageBuildings.elixirStorages.push({id: building.id, level: building.level});
+                } else if (building.name === STORAGE_TYPES[village].TOWN_HALL || 
+                          building.name === STORAGE_TYPES[village].BUILDER_HALL) {
+                    storageBuildings.townHalls.push({id: building.id, level: building.level});
+                }
+            });
+            
+            // Apply pending upgrades
+            if (state.note.buildings.length) {
+                updatePendingStorageUpgrades(storageBuildings, village);
+            }
+            
+            // Calculate capacities
+            const capacities = calculateStorageCapacities(storageBuildings, village);
+            
+            // Update note with current resources and capacities
+            updateNoteResources(capacities, village);
+        }
+    
+        function updatePendingStorageUpgrades(storageBuildings, village) {
+            state.note.buildings.forEach(upgrade => {
+                [
+                    {type: STORAGE_TYPES[village].GOLD, array: storageBuildings.goldStorages},
+                    {type: STORAGE_TYPES[village].ELIXIR, array: storageBuildings.elixirStorages},
+                    {type: STORAGE_TYPES[village].TOWN_HALL, array: storageBuildings.townHalls}
+                ].forEach(({type, array}) => {
+                    const index = array.findIndex(s => s.id === upgrade.id);
+                    if (index !== -1) {
+                        array[index].level = upgrade.level;
+                    }
+                });
+            });
+        }
+    
+        function calculateStorageCapacities(storageBuildings) {
+            const capacities = {
+                gold: 0,
+                elixir: 0,
+                dark_elixir: 0
+            };
+    
+            // Add storage building capacities
+            storageBuildings.goldStorages.forEach(storage => {
+                capacities.gold += storages.gold_storage[storage.level].g;
+            });
+            
+            storageBuildings.elixirStorages.forEach(storage => {
+                capacities.elixir += storages.elixir_storage[storage.level].e;
+            });
+    
+            // Add town hall capacities
+            if (storageBuildings.townHalls.length) {
+                const level = storageBuildings.townHalls[0].level;
+                const townHallStorage = storages.town_hall[level];
+                Object.assign(capacities, {
+                    gold: capacities.gold + townHallStorage.g,
+                    elixir: capacities.elixir + townHallStorage.e,
+                    dark_elixir: capacities.dark_elixir + townHallStorage.de
+                });
+            }
+    
+            return capacities;
+        }
+    
+        function updateNoteResources(capacities, village) {
+            if (!state.note.resources) {
+                state.note.resources = {
+                    gems: state.resources.gems
+                };
+            }
+
+            const resourceData = {};
+            let hasResources = false;
+
+            // Add resources with capacities
+            Object.entries(capacities).forEach(([resource, maxCapacity]) => {
+                if (maxCapacity > 0) {
+                    const current = state.resources[village][resource];
+                    if (current > 0) {  // Only add if there's a value
+                        resourceData[resource] = {
+                            current: current,
+                            max: maxCapacity
+                        };
+                        hasResources = true;
+                    }
+                }
+            });
+
+            // Only add the village if it has resources
+            if (hasResources) {
+                state.note.resources[village] = resourceData;
+            } else {
+                delete state.note.resources[village];
+            }
+            
+            // Update gems at top level only if there are gems
+            if (state.resources.gems > 0) {
+                state.note.resources.gems = state.resources.gems;
+            } else {
+                delete state.note.resources.gems;
+            }
+
+            // If no resources at all, delete the resources object
+            if (Object.keys(state.note.resources).length === 0) {
+                delete state.note.resources;
+            }
+        }
+    
+        function selectItem(type, item) {
+            if (type === 'build') {
+                const newBuilding = {
+                    village: item.village,
+                    id: item.id,
+                    name: item.name,
+                    level: item.level + 1
+                };
+                
+                const existingIndex = state.note.buildings.findIndex(b => b.id === newBuilding.id);
+                
+                if (existingIndex !== -1) {
+                    state.note.buildings.splice(existingIndex, 1);
+                } else {
+                    state.note.buildings.push(newBuilding);
+                }
+                
+                updateNote();
+            }
+        }
+    
+        // Context menu handling
+        document.addEventListener('contextmenu', (event) => {
+            const notableElement = event.target.closest('[data-info]');
+            
+            if (notableElement) {
+                event.preventDefault();
+                
+                const elementData = JSON.parse(notableElement.dataset.info);
+                const elementType = notableElement.dataset.type;
+                let noteText = null;
+                if(elementType === 'build') {
+                    noteText = `${elementData.village} - Started Upgrading: ${elementData.name} to Level ${elementData.level+1} (id #${elementData.id})`;
+                } else if(elementType === 'troop') {
+                    noteText = `${elementData.village} - Started Troop Upgrade: ${elementData.name} to Level ${elementData.level+1}`;
+                }
+
+                if(noteText) {
+                    const existingIndex = state.note.notes.indexOf(noteText);
+                    
+                    if (existingIndex !== -1) {
+                        state.note.notes.splice(existingIndex, 1);
+                    } else {
+                        state.note.notes.push(noteText);
+                    }
+                    
+                    updateNote();
+                }
+            }
+        });
+    
+        function updateNote() {
+            // Compute storages for both villages
+            computeStorages('home');
+            computeStorages('builder_base');
+            
+            const noteParent = {
+                [Date.now()]: state.note
+            };
+            
+            document.getElementById('note-builder').value = JSON.stringify(noteParent, null, 4);
+        }
+    </script>
+{% endblock %}
+
+{% block footer %}
+    {{ super() }}
+{% endblock %}

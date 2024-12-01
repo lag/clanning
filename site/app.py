@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 # Third-party
+from fastapi.staticfiles import StaticFiles
 import orjson
 import starlette
 from zstd import decompress
@@ -35,6 +36,10 @@ PLAYER_ALIASES = {
     for player in PLAYER_DATA
     for alias in PLAYER_DATA[player]['aliases']
 }
+with open('static/data/buildings.json', 'rb') as f:
+    GLOBAL_BUILDING_DATA = orjson.loads(f.read())
+with open('static/data/storages.json', 'rb') as f:
+    GLOBAL_STORAGE_DATA = orjson.loads(f.read())
 
 class InvalidPathError(Exception):pass
 
@@ -66,7 +71,7 @@ def get_safe_path(player_tag: str, base_dir: str = "history") -> Path:
         raise InvalidPathError(f"Unexpected error in path validation: {str(e)}")
 
 @app.get('/api/player/{player}')
-async def player(player: str) -> JSONResponse:
+async def get_player(player: str) -> JSONResponse:
     """
     Get the most recent data for a specific player.
 
@@ -92,13 +97,17 @@ async def player(player: str) -> JSONResponse:
         500: If internal error occurs
     """
     try:
-        if player[0] != '#' and player in PLAYER_ALIASES:
+        if (player[0] != '#' and f"#{player}" in PLAYER_DATA.keys()):
+            player = f"#{player}"
+
+        if player in PLAYER_ALIASES:
             player = PLAYER_ALIASES[player]
-        if player not in PLAYER_ALIASES.values():
-                return JSONResponse(
-                    content={"error": "Player not found", "player": player},
-                    status_code=404
-                )
+        if player not in PLAYER_ALIASES.values() and f'#{player}' not in PLAYER_ALIASES.values():
+            return JSONResponse(
+                content={"error": "Player not found", "player": player},
+                status_code=404
+            )
+    
         
         player_path = get_safe_path(player, 'history')
             
@@ -131,7 +140,7 @@ async def player(player: str) -> JSONResponse:
         )
 
 @app.get('/api/player/{player}/history')
-async def player_history(player: str) -> JSONResponse:
+async def get_player_history(player: str) -> JSONResponse:
     """
     Get the historical changes/differences for a specific player over time.
 
@@ -155,9 +164,12 @@ async def player_history(player: str) -> JSONResponse:
     """
 
     try:
-        if player[0] != '#' and player in PLAYER_ALIASES:
+        if (player[0] != '#' and f"#{player}" in PLAYER_DATA.keys()):
+            player = f"#{player}"
+
+        if player in PLAYER_ALIASES:
             player = PLAYER_ALIASES[player]
-        if player not in PLAYER_ALIASES.values():
+        if player not in PLAYER_ALIASES.values() and f'#{player}' not in PLAYER_ALIASES.values():
             return JSONResponse(
                 content={"error": "Player not found", "player": player},
                 status_code=404
@@ -178,6 +190,7 @@ async def player_history(player: str) -> JSONResponse:
                 with open(player_path / file, 'rb') as f:
                     data = orjson.loads(decompress(f.read()))
                     history[data['time']] = data
+                    print(file,data['player']['trophies'])
             except Exception as e:
                 print(f"Error reading file {file}: {str(e)}")
                 continue
@@ -244,7 +257,110 @@ async def player_history(player: str) -> JSONResponse:
             content={"error": "Internal server error", "details": str(e)},
             status_code=500
         )
+    
+@app.get('/api/player/{player}/buildings')
+async def get_player_buildings(player: str) -> JSONResponse:
+
+    if (player[0] != '#' and f"#{player}" in PLAYER_DATA.keys()):
+        player = f"#{player}"
+
+    if player in PLAYER_ALIASES:
+        player = PLAYER_ALIASES[player]
+    if player not in PLAYER_ALIASES.values() and f'#{player}' not in PLAYER_ALIASES.values():
+        return JSONResponse(
+            content={"error": "Player not found", "player": player},
+            status_code=404
+        )
+    
+    list_priorities = [
+        'Town Hall',
+        'Clan Castle',
+        'Cannon',
+        'Archer Tower',
+        'Mortar',
+        "Builder's Hut",
+        "Elixir Collector",
+        "Elixir Storage",
+        "Gold Mine",
+        "Gold Storage",
+        "Army Camp",
+        "Barracks",
+        "Laboratory",
+        "Bomb"
+    ]
+
+    if os.path.exists(f'../manual_history/{player}.json'):
+
+        buildings = {}
+        audit = []
+
+        with open(f'../manual_history/{player}.json', 'rb') as f:
+            history = orjson.loads(f.read())
+            for timestamp in history:
+                if 'buildings' in history[timestamp]:
+                    for building in history[timestamp]['buildings']:
+                        if building['id'] in buildings:
+
+                            # Checks for level change that isn't an increase/upgrade.
+                            if buildings[building['id']]['level'] >= building['level']:
+                                audit.append(f"{timestamp} | Upgraded: {buildings[building['id']]['name']} to Level {building['level']} (id #{building['id']})")
+                            
+                            # Checks for a name change of a building (not possible)
+                            if buildings[building['id']]['name'] != building['name']:
+                                audit.append(f"{timestamp} | Renamed: {buildings[building['id']]['name']} to {building['name']} (id #{building['id']})")
+                        
+                        buildings[building['id']] = building
+
+        # Convert to list and sort by name priority and level
+        buildings_list = list(buildings.values())
+        buildings_list.sort(
+            key=lambda x: (
+                list_priorities.index(x['name']) if x['name'] in list_priorities else len(list_priorities),
+                x['name'],  # secondary sort by name for items not in priority list
+                x.get('level', 0)
+            )
+        )
+
+        response = {}
+        response['audit'] = []
+        response['buildings'] = buildings_list
+                
+        return JSONResponse(content=response)
+    else:
+        return JSONResponse(
+            content={"error": "No manual history found for player", "player": player},
+            status_code=404
+        )
+
+@app.get("/player/{player}", include_in_schema=False)
+async def player_page(player: str, request: Request) -> starlette.templating._TemplateResponse:
+    response = await get_player(player)
+    player_data = orjson.loads(response.body)
+
+    if response.status_code != 200:return {"error": "what - get_player"}
+
+    response = await get_player_history(player)
+    history_data = orjson.loads(response.body)
+
+    if response.status_code != 200:return {"error": "what - get_player_history"}
+
+    response = await get_player_buildings(player)
+    buildings_data = orjson.loads(response.body)
+
+    if response.status_code != 200:return {"error": "what - get_player_buildings"}
+
+    return templates.TemplateResponse("player.html", {"request": player_data, "player_data": player_data, "history_data": history_data, "buildings_data": buildings_data, 'GLOBAL_BUILDING_DATA': GLOBAL_BUILDING_DATA, 'GLOBAL_STORAGE_DATA': GLOBAL_STORAGE_DATA})
+
+@app.get("/players", include_in_schema=False)
+async def players_page(request: Request) -> starlette.templating._TemplateResponse:
+    players = list(PLAYER_DATA.keys())
+    for i, player in enumerate(players):
+        if player[0] == '#':
+            players[i] = player[1:]
+    return templates.TemplateResponse("players.html", {"request": request, "players": players})
 
 @app.get("/", include_in_schema=False)
 async def root(request: Request) -> starlette.templating._TemplateResponse:
     return templates.TemplateResponse("index.html", {"request": request})
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
