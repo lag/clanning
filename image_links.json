@@ -777,7 +777,7 @@
             "rocket_spear": "https://static.wikia.nocookie.net/clashofclans/images/0/00/Rocket_Spear.png"
         }
     },
-    "builderBase": {
+    "builder": {
         "buildings": {
             "archer_tower": {
                 "#source": "https://clashofclans.fandom.com/wiki/Archer_Tower/Builder_Base",

@@ -334,7 +334,7 @@
             }
         }
     },
-    "builderBase": {
+    "builder": {
         "builder_hall": {
             "1": {
                 "g": 50000,

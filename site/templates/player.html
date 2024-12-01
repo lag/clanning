@@ -11,12 +11,12 @@
 
         <div style="margin-bottom: 20px;">
             <a href="/player/{{player_data.player.tag[1:]}}/home" class="base-button {% if requested_village == 'home' %}active{% endif %}">Home Village</a>
-            <a href="/player/{{player_data.player.tag[1:]}}/builderBase" class="base-button {% if requested_village == 'builderBase' %}active{% endif %}">Builder Base</a>
+            <a href="/player/{{player_data.player.tag[1:]}}/builder" class="base-button {% if requested_village == 'builder' %}active{% endif %}">Builder Base</a>
         </div>
 
         <div>
             <h2>Player</h2>
-            {% for key in ['townHallLevel', 'townHallWeaponLevel', 'expLevel', 'trophies', 'bestTrophies', 'warStars', 'attackWins', 'defenseWins', 'builderBaseTrophies', 'bestBuilderBaseTrophies', 'donations', 'donationsReceived', 'clanCapitalContributions'] %}
+            {% for key in ['townHallLevel', 'townHallWeaponLevel', 'expLevel', 'trophies', 'bestTrophies', 'warStars', 'attackWins', 'defenseWins', 'builderTrophies', 'bestbuilderTrophies', 'donations', 'donationsReceived', 'clanCapitalContributions'] %}
                 <p>{{key}}: {{player_data.player[key]}}</p>
             {% endfor %}
         </div>
@@ -82,7 +82,7 @@
                             <p>{{troop.name}}: {{troop.level}}</p>
                         </div>
                     </div>
-                {% elif requested_village == 'builderBase' and troop.village == 'builderBase' and troop.name in ["Raged Barbarian", "Sneaky Archer"]%}
+                {% elif requested_village == 'builder' and troop.village == 'builder' and troop.name in ["Raged Barbarian", "Sneaky Archer"]%}
                     <div style="border: 1px solid black; padding: 10px; width: 192px; display: flex; flex-direction: row; align-items: center;">
                         <img height="64" src="/static/images/{{troop.village}}/troops/{{troop.name.lower().replace(" ","_").replace(".","")}}/avatar.png" alt="{{troop.name}}">
                         <div onclick="selectItem('troop','{{troop.name}}')" data-info='{{troop|tojson|safe}}' data-type="troop">
@@ -171,7 +171,7 @@
                 DARK_ELIXIR: 'Dark Elixir Storage',
                 TOWN_HALL: 'Town Hall'
             },
-            builderBase: {
+            builder: {
                 BUILDER_HALL: 'Builder Hall'
             }
         };
@@ -182,7 +182,7 @@
                 notes: [],
                 resources: {
                     home: {},
-                    builderBase: {},
+                    builder: {},
                     gems: 0
                 }
             },
@@ -192,7 +192,7 @@
                     elixir: 0,
                     dark_elixir: 0
                 },
-                builderBase: {
+                builder: {
                     gold: 0,
                     elixir: 0
                 },
@@ -237,7 +237,7 @@
                     } else if (building.name === STORAGE_TYPES[village].TOWN_HALL) {
                         storageBuildings.townHalls.push({id: building.id, level: building.level});
                     }
-                } else if (village === 'builderBase') {
+                } else if (village === 'builder') {
                     if (building.name === STORAGE_TYPES[village].BUILDER_HALL) {
                         storageBuildings.townHalls.push({id: building.id, level: building.level});
                     }
@@ -270,7 +270,7 @@
                             array[index].level = upgrade.level;
                         }
                     });
-                } else if (village === 'builderBase') {
+                } else if (village === 'builder') {
                     if (upgrade.name === STORAGE_TYPES[village].BUILDER_HALL) {
                         const index = storageBuildings.townHalls.findIndex(s => s.id === upgrade.id);
                         if (index !== -1) {
@@ -311,12 +311,12 @@
                         dark_elixir: capacities.dark_elixir + townHallStorage.de
                     });
                 }
-            } else if (village === 'builderBase') {
+            } else if (village === 'builder') {
                 // For Builder Base, all storage comes from Builder Hall
                 if (storageBuildings.townHalls.length) {
                     const level = storageBuildings.townHalls[0].level;
-                    // Fix: Use 'builderBase' instead of 'builderBase'
-                    const builderHallStorage = storages['builderBase'].builder_hall[level];
+                    // Fix: Use 'builder' instead of 'builder'
+                    const builderHallStorage = storages['builder'].builder_hall[level];
                     Object.assign(capacities, {
                         gold: builderHallStorage.g,
                         elixir: builderHallStorage.e

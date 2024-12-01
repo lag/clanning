@@ -39,8 +39,8 @@ METRICS = {
     'player.townHallLevel': None,
     'player.trophies': None,
     'player.bestTrophies': None,
-    'player.builderBaseTrophies': None,
-    'player.bestBuilderBaseTrophies': None,
+    'player.builderTrophies': None,
+    'player.bestbuilderTrophies': None,
     'player.expLevel': None,
     'player.multiplayerWins': 'Conqueror',
     'player.goldStolen': 'Gold Grab',
@@ -73,7 +73,6 @@ def load_data_files():
         raise
 
 PLAYER_DATA, PLAYER_ALIASES, GLOBAL_BUILDING_DATA, GLOBAL_STORAGE_DATA = load_data_files()
-print("Loaded storage data:", GLOBAL_STORAGE_DATA)
 
 def timeago(timestamp):
     now = datetime.now()
@@ -434,7 +433,7 @@ async def player_page(player: str, request: Request, village: str = 'home') -> s
 
     heroes = {
         'home': {},
-        'builderBase': {}
+        'builder': {}
     }
 
     equipment_to_hero = {
@@ -471,14 +470,24 @@ async def player_page(player: str, request: Request, village: str = 'home') -> s
         'Minion Prince': 'home',
         'Grand Warden': 'home',
         'Royal Champion': 'home',
-        'Battle Machine': 'builderBase',
-        'Battle Copter': 'builderBase',
+        'Battle Machine': 'builder',
+        'Battle Copter': 'builder',
     }
+
+    village_convert = {
+        'home': 'home',
+        'builderBase': 'builder'
+    }
+
+    if 'troops' in player_data['player']:
+        for troop in player_data['player']['troops']:
+            troop['village'] = village_convert[troop['village']]
 
     if 'heroes' in player_data['player']:
 
         selected_equipment = set()
         for hero in player_data['player']['heroes']:
+            hero['village'] = village_convert[hero['village']]
             heroes[hero['village']][hero['name']] = {**hero, 'selectedEquipment': [], 'equipment': []}
             if 'equipment' in hero.keys():
                 for equipment in hero['equipment']:
