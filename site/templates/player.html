@@ -182,33 +182,33 @@
             });
         }
     
-        function calculateStorageCapacities(storageBuildings) {
+        function calculateStorageCapacities(storageBuildings, village) {
             const capacities = {
                 gold: 0,
                 elixir: 0,
                 dark_elixir: 0
             };
-    
+
             // Add storage building capacities
             storageBuildings.goldStorages.forEach(storage => {
-                capacities.gold += storages.gold_storage[storage.level].g;
+                capacities.gold += storages[village].gold_storage[storage.level].g;
             });
             
             storageBuildings.elixirStorages.forEach(storage => {
-                capacities.elixir += storages.elixir_storage[storage.level].e;
+                capacities.elixir += storages[village].elixir_storage[storage.level].e;
             });
-    
+
             // Add town hall capacities
             if (storageBuildings.townHalls.length) {
                 const level = storageBuildings.townHalls[0].level;
-                const townHallStorage = storages.town_hall[level];
+                const townHallStorage = storages[village].town_hall[level];
                 Object.assign(capacities, {
                     gold: capacities.gold + townHallStorage.g,
                     elixir: capacities.elixir + townHallStorage.e,
                     dark_elixir: capacities.dark_elixir + townHallStorage.de
                 });
             }
-    
+
             return capacities;
         }
     
