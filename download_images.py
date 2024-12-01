@@ -1,5 +1,5 @@
 import os
-import requests
+import httpx
 import json
 
 stats = {
@@ -9,7 +9,7 @@ stats = {
 }
 
 def download_image(url: str, filename: str) -> None:
-    response = requests.get(url)
+    response = httpx.get(url)
 
     if response.status_code != 200:
         print('Failed to download:', url)

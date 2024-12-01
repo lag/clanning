@@ -20,7 +20,7 @@
             <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;">
             {% for building in buildings_data.buildings %}
                 <div style="border: 1px solid black; padding: 10px; width: 192px; display: flex; flex-direction: row; align-items: center;">
-                    <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name.replace(" ","_").replace("'","")}}/{{building.level}}.png" alt="{{building.name}}">
+                    <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name.lower().replace(" ","_").replace("'","")}}/{{building.level}}.png" alt="{{building.name}}">
                     <div onclick="selectItem('build',{{building}})" data-info='{{building|tojson|safe}}' data-type="build">
                         <p>{{building.id}} - {{building.name}}: {{building.level}}</p>
                     </div>
@@ -36,7 +36,7 @@
             {% for troop in player_data.player.troops %}
                 {% if troop.village == 'home' and troop.name in ["Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"] %}
                     <div style="border: 1px solid black; padding: 10px; width: 192px; display: flex; flex-direction: row; align-items: center;">
-                        <img height="64" src="/static/images/{{troop.village}}/troops/{{troop.name.replace(" ","_").replace(".","")}}/avatar.png" alt="{{troop.name}}">
+                        <img height="64" src="/static/images/{{troop.village}}/troops/{{troop.name.lower().replace(" ","_").replace(".","")}}/avatar.png" alt="{{troop.name}}">
                         <div onclick="selectItem('troop','{{troop.name}}')" data-info='{{troop|tojson|safe}}' data-type="troop">
                             <p> {{troop.name}}: {{troop.level}}</p>
                         </div>
