@@ -86,7 +86,7 @@ def timeago(timestamp):
         seconds = diff.total_seconds()
         
         if seconds < 60:
-            return f'{seconds} second{"s" if seconds != 1 else ""} ago'
+            return f'{int(seconds)} second{"s" if seconds <= 1 else ""} ago'
         elif seconds < 3600:
             minutes = int(seconds / 60)
             return f'{minutes} minute{"s" if minutes != 1 else ""} ago'
@@ -427,6 +427,71 @@ async def player_page(player: str, request: Request) -> starlette.templating._Te
     buildings_data, status_code = await _get_player_buildings(player)
     if status_code != 200:
         return {"error": f"Error getting player buildings: {status_code}: {buildings_data}"}
+
+    heroes = {
+        'home': {},
+        'builderBase': {}
+    }
+
+    equipment_to_hero = {
+        'Barbarian Puppet': 'Barbarian King',
+        'Rage Vial': 'Barbarian King',
+        'Earthquake Boots': 'Barbarian King',
+        'Vampstache': 'Barbarian King',
+        'Giant Gauntlet': 'Barbarian King',
+        'Spikey Ball': 'Barbarian King',
+        'Archer Puppet': 'Archer Queen',
+        'Invisibility Vial': 'Archer Queen',
+        'Giant Arrow': 'Archer Queen',
+        'Healer Puppet': 'Archer Queen',
+        'Frozen Arrow': 'Archer Queen',
+        'Magic Mirror': 'Archer Queen',
+        'Henchmen Puppet': 'Minion Prince',
+        'Dark Orb': 'Minion Prince',
+        'Eternal Tome': 'Grand Warden',
+        'Life Gem': 'Grand Warden',
+        'Rage Gem': 'Grand Warden',
+        'Healing Tome': 'Grand Warden',
+        'Fireball': 'Grand Warden',
+        'Lavaloon Puppet': 'Grand Warden',
+        'Royal Gem': 'Royal Champion',
+        'Seeking Shield': 'Royal Champion',
+        'Hog Rider Puppet': 'Royal Champion',
+        'Haste Vial': 'Royal Champion',
+        'Rocket Spear': 'Royal Champion'
+    }
+
+    hero_to_village = {
+        'Barbarian King': 'home',
+        'Archer Queen': 'home',
+        'Minion Prince': 'home',
+        'Grand Warden': 'home',
+        'Royal Champion': 'home',
+        'Battle Machine': 'builderBase',
+        'Battle Copter': 'builderBase',
+    }
+
+    if 'heroes' in player_data['player']:
+
+        selected_equipment = set()
+        for hero in player_data['player']['heroes']:
+            heroes[hero['village']][hero['name']] = {**hero, 'selectedEquipment': [], 'equipment': []}
+            if 'equipment' in hero.keys():
+                for equipment in hero['equipment']:
+                    heroes[hero['village']][hero['name']]['selectedEquipment'].append({**equipment})
+                    selected_equipment.add(equipment['name'])
+
+        if 'heroEquipment' in player_data['player']:
+            for equipment in player_data['player']['heroEquipment']:
+
+                if equipment['name'] in equipment_to_hero.keys(): # catch for new/undocumented equipment
+
+                    hero = equipment_to_hero[equipment['name']]
+                    heroes[hero_to_village[hero]][hero]['equipment'].append({**equipment})
+                    if equipment['name'] in selected_equipment:
+                        heroes[hero_to_village[hero]][hero]['equipment'][-1]['selected'] = True
+
+    player_data['heroesFormatted'] = heroes
 
     return templates.TemplateResponse(
         "player.html", 

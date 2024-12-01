@@ -749,6 +749,32 @@
                 "#source": "https://clashofclans.fandom.com/wiki/Royal_Champion",
                 "avatar": "https://static.wikia.nocookie.net/clashofclans/images/b/b0/Royal_Champion_info.png"
             }
+        },
+        "hero_equipment": {
+            "barbarian_puppet": "https://static.wikia.nocookie.net/clashofclans/images/9/96/Barbarian_Puppet.png",
+            "rage_vial": "https://static.wikia.nocookie.net/clashofclans/images/8/89/Rage_Vial.png",
+            "earthquake_boots": "https://static.wikia.nocookie.net/clashofclans/images/4/4b/Earthquake_Boots.png",
+            "vampstache": "https://static.wikia.nocookie.net/clashofclans/images/6/6d/Vampstache.png",
+            "giant_gaunlet": "https://static.wikia.nocookie.net/clashofclans/images/2/27/Giant_Gauntlet.png",
+            "spiky_ball": "https://static.wikia.nocookie.net/clashofclans/images/d/d9/Spiky_Ball.png",
+            "archer_puppet": "https://static.wikia.nocookie.net/clashofclans/images/d/d4/Archer_Puppet.png",
+            "invisibility_vial": "https://static.wikia.nocookie.net/clashofclans/images/0/08/Invisibility_Vial.png",
+            "giant_arrow": "https://static.wikia.nocookie.net/clashofclans/images/b/bb/Giant_Arrow.png",
+            "healer_puppet": "https://static.wikia.nocookie.net/clashofclans/images/d/dd/Healer_Puppet.png",
+            "frozen_arrow": "https://static.wikia.nocookie.net/clashofclans/images/2/23/Frozen_Arrow.png",
+            "magic_mirror": "https://static.wikia.nocookie.net/clashofclans/images/1/1d/Magic_Mirror.png",
+            "henchmen_puppet": "https://static.wikia.nocookie.net/clashofclans/images/d/dc/Henchmen_Puppet.png",
+            "dark_orb": "https://static.wikia.nocookie.net/clashofclans/images/c/cc/Dark_Orb.png",
+            "eternal_tome": "https://static.wikia.nocookie.net/clashofclans/images/2/29/Eternal_Tome.png",
+            "life_gem": "https://static.wikia.nocookie.net/clashofclans/images/f/fe/Life_Gem.png",
+            "rage_gem": "https://static.wikia.nocookie.net/clashofclans/images/8/8f/Rage_Gem.png",
+            "healing_tome": "https://static.wikia.nocookie.net/clashofclans/images/5/5e/Healing_Tome.png",
+            "fireball": "https://static.wikia.nocookie.net/clashofclans/images/4/49/Fireball_Equipment.png",
+            "royal_gem": "https://static.wikia.nocookie.net/clashofclans/images/b/b9/Royal_Gem.png",
+            "seeking_shield": "https://static.wikia.nocookie.net/clashofclans/images/3/36/Seeking_Shield.png",
+            "hog_rider_puppet": "https://static.wikia.nocookie.net/clashofclans/images/3/32/Hog_Rider_Puppet.png",
+            "haste_vial": "https://static.wikia.nocookie.net/clashofclans/images/b/b1/Haste_Vial.png",
+            "rocket_spear": "https://static.wikia.nocookie.net/clashofclans/images/0/00/Rocket_Spear.png"
         }
     }
 }

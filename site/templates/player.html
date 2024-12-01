@@ -16,6 +16,31 @@
             {% endfor %}
         </div>
 
+        {% if player_data.player.heroes %}
+        <h2>Heroes</h2>
+        <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;">
+            {% for hero in player_data.player.heroes %}
+            {% if hero.village == 'home' %}
+            <div style="border: 1px solid black; padding: 10px; width: 256px; display: flex; flex-direction: row;">
+                <div>
+                    <img height="64" src="/static/images/{{hero.village}}/heroes/{{hero.name.lower().replace(" ","_").replace(".","")}}/avatar.png" alt="{{hero.name}}">
+                    <p>{{hero.name}}</p>
+                    <p>Level {{hero.level}}</p>
+                </div>
+                <div>
+                    {% for equipment in player_data.heroesFormatted[hero.village][hero.name]['equipment'] %}
+                    <div style="border: 1px solid black; padding: 10px; display: flex; flex-direction: row;">
+                        <img height="32" src="/static/images/{{hero.village}}/hero_equipment/{{equipment.name.lower().replace(" ","_").replace(".","")}}.png" alt="{{equipment.name}}">
+                        <p>{{equipment.name}}: {{equipment.level}}/{{equipment.maxLevel}} {%if equipment.selected %}✔️{%endif%}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <div>
             <h2>Buildings</h2>
             <p>Left click on a building to mark as upgraded and right click to add a note of the upgrade starting with the new level.</p>

@@ -30,22 +30,31 @@ with open("image_links.json", "r") as f:
 for village in image_links:
     for main_type in image_links[village]:
         for name in image_links[village][main_type]:
-            for level in image_links[village][main_type][name]:
 
-                # Skips source attribution links.
-                if level[0] == '#':
-                    continue
-
-                image_type = image_links[village][main_type][name][level].rsplit('/', 1)[1].split('.')[-1]
-
-                file_name = f"site/static/images/{village}/{main_type}/{name}/{level}.{image_type}"
+            if type(image_links[village][main_type][name]) == str:
+                image_type = image_links[village][main_type][name].rsplit('/', 1)[1].split('.')[-1]
+                file_name = f"site/static/images/{village}/{main_type}/{name}.{image_type}"
 
                 if os.path.exists(file_name):
                     print('Already exists:', file_name)
                     stats['already_exists'] += 1
                     continue
 
-                download_image(image_links[village][main_type][name][level], file_name)
+                download_image(image_links[village][main_type][name], file_name)
+            else:
+                for level in image_links[village][main_type][name]:
+                     # Skips source attribution links.
+                    if level[0] == '#':
+                        continue
+                    image_type = image_links[village][main_type][name][level].rsplit('/', 1)[1].split('.')[-1]
+                    file_name = f"site/static/images/{village}/{main_type}/{name}/{level}.{image_type}"
+
+                    if os.path.exists(file_name):
+                        print('Already exists:', file_name)
+                        stats['already_exists'] += 1
+                        continue
+
+                    download_image(image_links[village][main_type][name][level], file_name)
 
 print('Download statistics:',stats)
 print('Done.')
