@@ -1,0 +1,82 @@
+{% macro create_chart(chart_id, title, data, color="rgb(75, 192, 192)") %}
+<div class="chart-container">
+    <canvas id="{{ chart_id }}"></canvas>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('{{ chart_id }}');
+        if (!ctx) return;
+
+        // Destroy existing chart if it exists
+        let existingChart = Chart.getChart(ctx);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+
+        // Create data points with proper x,y format
+        const dataPoints = {{ data.x | tojson }}.map((timestamp, index) => ({
+            x: timestamp * 1000, // Convert to milliseconds
+            y: {{ data.y | tojson }}[index]
+        }));
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: '{{ title }}',
+                    data: dataPoints,
+                    borderColor: '{{ color }}',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '{{ title }}'
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return new Date(context[0].raw.x).toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        ticks: {
+                            callback: function(value) {
+                                return new Date(value).toLocaleString();
+                            },
+                            maxRotation: 90,
+                            minRotation: 90
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<style>
+    .chart-container {
+        position: relative;
+        height: 400px;
+        width: 100%;
+        padding: 20px;
+        background: white;
+    }
+</style>
+{% endmacro %}

@@ -86,6 +86,10 @@
                 "5": "https://static.wikia.nocookie.net/clashofclans/images/e/e7/Builders_Hut5.png",
                 "6": "https://static.wikia.nocookie.net/clashofclans/images/0/0b/Builders_Hut6.png"
             },
+            "bobs_hut": {
+                "#source": "https://clashofclans.fandom.com/wiki/B.O.B's_Hut",
+                "1": "https://static.wikia.nocookie.net/clashofclans/images/8/80/O.T.T.O_Hut5.png"
+            },
             "cannon": {
                 "#source": "https://clashofclans.fandom.com/wiki/Cannon/Home_Village",
                 "1": "https://static.wikia.nocookie.net/clashofclans/images/a/a1/Cannon1.png",
@@ -257,12 +261,32 @@
                 "9": "https://static.wikia.nocookie.net/clashofclans/images/e/e0/Town_Hall9.png",
                 "10": "https://static.wikia.nocookie.net/clashofclans/images/5/5c/Town_Hall10.png",
                 "11": "https://static.wikia.nocookie.net/clashofclans/images/9/96/Town_Hall11.png",
-                "12-1": "https://static.wikia.nocookie.net/clashofclans/images/c/c7/Town_Hall12-1.png",
-                "13-1": "https://static.wikia.nocookie.net/clashofclans/images/9/98/Town_Hall13-1.png",
-                "14-1": "https://static.wikia.nocookie.net/clashofclans/images/e/e0/Town_Hall14-1.png",
-                "15-1": "https://static.wikia.nocookie.net/clashofclans/images/5/5b/Town_Hall15-1.png",
+                "12-1": "https://static.wikia.nocookie.net/clashofclans/images/9/94/Giga_Tesla1.png",
+                "12-2": "https://static.wikia.nocookie.net/clashofclans/images/5/59/Giga_Tesla2.png",
+                "12-3": "https://static.wikia.nocookie.net/clashofclans/images/5/59/Giga_Tesla3.png",
+                "12-4": "https://static.wikia.nocookie.net/clashofclans/images/6/69/Giga_Tesla4.png",
+                "12-5": "https://static.wikia.nocookie.net/clashofclans/images/0/06/Giga_Tesla5.png",
+                "13-1": "https://static.wikia.nocookie.net/clashofclans/images/0/0e/Giga_Inferno1.png",
+                "13-2": "https://static.wikia.nocookie.net/clashofclans/images/5/5d/Giga_Inferno2.png",
+                "13-3": "https://static.wikia.nocookie.net/clashofclans/images/1/10/Giga_Inferno3.png",
+                "13-4": "https://static.wikia.nocookie.net/clashofclans/images/3/35/Giga_Inferno4.png",
+                "13-5": "https://static.wikia.nocookie.net/clashofclans/images/0/0f/Giga_Inferno5.png",
+                "14-1": "https://static.wikia.nocookie.net/clashofclans/images/3/3b/Giga_Inferno14-1.png",
+                "14-2": "https://static.wikia.nocookie.net/clashofclans/images/a/a5/Giga_Inferno14-2.png",
+                "14-3": "https://static.wikia.nocookie.net/clashofclans/images/e/ec/Giga_Inferno14-3.png",
+                "14-4": "https://static.wikia.nocookie.net/clashofclans/images/1/1f/Giga_Inferno14-4.png",
+                "14-5": "https://static.wikia.nocookie.net/clashofclans/images/4/48/Giga_Inferno14-5.png",
+                "15-1": "https://static.wikia.nocookie.net/clashofclans/images/c/c8/Giga_Inferno15-1.png",
+                "15-2": "https://static.wikia.nocookie.net/clashofclans/images/8/85/Giga_Inferno15-2.png",
+                "15-3": "https://static.wikia.nocookie.net/clashofclans/images/e/e6/Giga_Inferno15-3.png",
+                "15-4": "https://static.wikia.nocookie.net/clashofclans/images/6/6b/Giga_Inferno15-4.png",
+                "15-5": "https://static.wikia.nocookie.net/clashofclans/images/1/1d/Giga_Inferno15-5.png",
                 "16": "https://static.wikia.nocookie.net/clashofclans/images/5/53/Town_Hall16.png",
-                "17-1": "https://static.wikia.nocookie.net/clashofclans/images/2/24/Town_Hall17-1.png"
+                "17-1": "https://static.wikia.nocookie.net/clashofclans/images/b/bf/Inferno_Artillery1.png",
+                "17-2": "https://static.wikia.nocookie.net/clashofclans/images/9/92/Inferno_Artillery2.png",
+                "17-3": "https://static.wikia.nocookie.net/clashofclans/images/c/c7/Inferno_Artillery3.png",
+                "17-4": "https://static.wikia.nocookie.net/clashofclans/images/0/0a/Inferno_Artillery4.png",
+                "17-5": "https://static.wikia.nocookie.net/clashofclans/images/9/9a/Inferno_Artillery5.png"
             },
             "wizard_tower": {
                 "#source": "https://clashofclans.fandom.com/wiki/Wizard_Tower",
@@ -548,7 +572,7 @@
                 "6": "https://static.wikia.nocookie.net/clashofclans/images/6/6b/Seeking_Air_Mine5.png",
                 "7": "https://static.wikia.nocookie.net/clashofclans/images/5/51/Seeking_Air_Mine7.png"
             },
-            "skeleton_trap_ground": {
+            "skeleton_trap": {
                 "#source": "https://clashofclans.fandom.com/wiki/Skeleton_Trap",
                 "1": "https://static.wikia.nocookie.net/clashofclans/images/0/0c/SkeletonTrap1_Ground.png",
                 "2": "https://static.wikia.nocookie.net/clashofclans/images/0/0c/SkeletonTrap1_Ground.png",

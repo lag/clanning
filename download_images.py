@@ -36,7 +36,7 @@ for village in image_links:
                 if level[0] == '#':
                     continue
 
-                image_type = image_links[village][main_type][name][level].rsplit('/', 1)[1].split('.')[1]
+                image_type = image_links[village][main_type][name][level].rsplit('/', 1)[1].split('.')[-1]
 
                 file_name = f"site/static/images/{village}/{main_type}/{name}/{level}.{image_type}"
 
