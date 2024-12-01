@@ -39,6 +39,8 @@ METRICS = {
     'player.townHallLevel': None,
     'player.trophies': None,
     'player.bestTrophies': None,
+    'player.builderBaseTrophies': None,
+    'player.bestBuilderBaseTrophies': None,
     'player.expLevel': None,
     'player.multiplayerWins': 'Conqueror',
     'player.goldStolen': 'Gold Grab',
@@ -71,6 +73,7 @@ def load_data_files():
         raise
 
 PLAYER_DATA, PLAYER_ALIASES, GLOBAL_BUILDING_DATA, GLOBAL_STORAGE_DATA = load_data_files()
+print("Loaded storage data:", GLOBAL_STORAGE_DATA)
 
 def timeago(timestamp):
     now = datetime.now()
@@ -391,8 +394,9 @@ async def get_player_buildings(player: str) -> JSONResponse:
     data, status_code = await _get_player_buildings(player)
     return JSONResponse(content=data, status_code=status_code)
 
+@app.get("/player/{player}/{village}", include_in_schema=False)
 @app.get("/player/{player}", include_in_schema=False)
-async def player_page(player: str, request: Request) -> starlette.templating._TemplateResponse:
+async def player_page(player: str, request: Request, village: str = 'home') -> starlette.templating._TemplateResponse:
     player_data, status_code = await _get_player(player)
     if status_code != 200:
         return {"error": f"Error getting player data: {status_code}: {player_data}"}
@@ -497,6 +501,7 @@ async def player_page(player: str, request: Request) -> starlette.templating._Te
         "player.html", 
         {
             "request": player_data,
+            "requested_village": village,
             "player_data": player_data,
             "history_data": history_data,
             "history_graphs": history_graphs,

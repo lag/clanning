@@ -9,6 +9,11 @@
     <div style="flex: 2;">
         <h1>{{player_data.player.name}} ({{player_data.player.tag}})</h1>
 
+        <div style="margin-bottom: 20px;">
+            <a href="/player/{{player_data.player.tag[1:]}}/home" class="base-button {% if requested_village == 'home' %}active{% endif %}">Home Village</a>
+            <a href="/player/{{player_data.player.tag[1:]}}/builderBase" class="base-button {% if requested_village == 'builderBase' %}active{% endif %}">Builder Base</a>
+        </div>
+
         <div>
             <h2>Player</h2>
             {% for key in ['townHallLevel', 'townHallWeaponLevel', 'expLevel', 'trophies', 'bestTrophies', 'warStars', 'attackWins', 'defenseWins', 'builderBaseTrophies', 'bestBuilderBaseTrophies', 'donations', 'donationsReceived', 'clanCapitalContributions'] %}
@@ -20,7 +25,7 @@
         <h2>Heroes</h2>
         <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;">
             {% for hero in player_data.player.heroes %}
-            {% if hero.village == 'home' %}
+            {% if hero.village == requested_village %}
             <div style="border: 1px solid black; padding: 10px; width: 256px; display: flex; flex-direction: row;">
                 <div>
                     <img height="64" src="/static/images/{{hero.village}}/heroes/{{hero.name.lower().replace(" ","_").replace(".","")}}/avatar.png" alt="{{hero.name}}">
@@ -46,6 +51,7 @@
             <p>Left click on a building to mark as upgraded and right click to add a note of the upgrade starting with the new level.</p>
             <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;">
             {% for building in buildings_data.buildings %}
+            {% if building.village == requested_village %}
                 <div style="border: 1px solid black; padding: 10px; width: 256px; display: flex; flex-direction: row; align-items: center;">
                     {% if building.weaponLevel %}
                         <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name.lower().replace(" ","_").replace("-","_").replace("'","").replace(".","")}}/{{building.level}}-{{building.weaponLevel}}.png" alt="{{building.name}}">
@@ -59,6 +65,7 @@
                         </div>
                     {% endif %}
                 </div>
+            {% endif %}
             {% endfor %}
             </div>
         </div>
@@ -68,7 +75,14 @@
             <p>Right click to add a note of the upgrade starting with the new level. No need to mark as upgraded as the API will reflect this.</p>
             <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;">
             {% for troop in player_data.player.troops %}
-                {% if troop.village == 'home' and troop.name in ["Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"] %}
+                {% if requested_village == 'home' and troop.village == 'home' and troop.name in ["Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"] %}
+                    <div style="border: 1px solid black; padding: 10px; width: 192px; display: flex; flex-direction: row; align-items: center;">
+                        <img height="64" src="/static/images/{{troop.village}}/troops/{{troop.name.lower().replace(" ","_").replace(".","")}}/avatar.png" alt="{{troop.name}}">
+                        <div onclick="selectItem('troop','{{troop.name}}')" data-info='{{troop|tojson|safe}}' data-type="troop">
+                            <p>{{troop.name}}: {{troop.level}}</p>
+                        </div>
+                    </div>
+                {% elif requested_village == 'builderBase' and troop.village == 'builderBase' and troop.name in ["Raged Barbarian", "Sneaky Archer"]%}
                     <div style="border: 1px solid black; padding: 10px; width: 192px; display: flex; flex-direction: row; align-items: center;">
                         <img height="64" src="/static/images/{{troop.village}}/troops/{{troop.name.lower().replace(" ","_").replace(".","")}}/avatar.png" alt="{{troop.name}}">
                         <div onclick="selectItem('troop','{{troop.name}}')" data-info='{{troop|tojson|safe}}' data-type="troop">
@@ -83,10 +97,12 @@
         <div>
             <h2>Recent Upgrade Logs</h2>
             {% for log in buildings_data.logs.upgrades[:10] %}
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <img height="64" src="/static/images/{{log.village}}/buildings/{{log.name.lower().replace(" ","_").replace("-","_").replace("'","").replace(".","")}}/{{log.level}}.png" alt="{{log.name}}">
-                    <p>{{log.time|timeago}}: {{log.name}} was upgraded to level {{log.level}}</p>
-                </div>
+                {% if log.village == requested_village %}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <img height="64" src="/static/images/{{log.village}}/buildings/{{log.name.lower().replace(" ","_").replace("-","_").replace("'","").replace(".","")}}/{{log.level}}.png" alt="{{log.name}}">
+                        <p>{{log.time|timeago}}: {{log.name}} was upgraded to level {{log.level}}</p>
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
 
@@ -123,17 +139,17 @@
                    id="gold-input" 
                    placeholder="Gold" 
                    style="width: 100px;"
-                   onchange="updateResource('gold', 'home', this.value)">
+                   onchange="updateResource('gold', '{{requested_village}}', this.value)">
             <input type="number" 
                    id="elixir-input" 
                    placeholder="Elixir" 
                    style="width: 100px;"
-                   onchange="updateResource('elixir', 'home', this.value)">
+                   onchange="updateResource('elixir', '{{requested_village}}', this.value)">
             <input type="number" 
                    id="dark-elixir-input" 
                    placeholder="Dark Elixir" 
                    style="width: 100px;"
-                   onchange="updateResource('dark_elixir', 'home', this.value)">
+                   onchange="updateResource('dark_elixir', '{{requested_village}}', this.value)">
             <input type="number" 
                    id="gems-input" 
                    placeholder="Gems" 
@@ -155,9 +171,7 @@
                 DARK_ELIXIR: 'Dark Elixir Storage',
                 TOWN_HALL: 'Town Hall'
             },
-            builder_base: {
-                GOLD: 'Gold Storage',
-                ELIXIR: 'Elixir Storage',
+            builderBase: {
                 BUILDER_HALL: 'Builder Hall'
             }
         };
@@ -168,8 +182,8 @@
                 notes: [],
                 resources: {
                     home: {},
-                    builder_base: {},
-                    gems: 0  // Move gems to top level
+                    builderBase: {},
+                    gems: 0
                 }
             },
             resources: {
@@ -178,11 +192,11 @@
                     elixir: 0,
                     dark_elixir: 0
                 },
-                builder_base: {
+                builderBase: {
                     gold: 0,
                     elixir: 0
                 },
-                gems: 0  // Move gems to top level
+                gems: 0
             }
         };
     
@@ -201,85 +215,113 @@
             }
         }
     
-        function computeStorages(village = 'home') { // TODO: Add builder_base
-            const storageBuildings = {
+        function computeStorages(village = 'home') {
+            let storageBuildings = {
                 goldStorages: [],
                 elixirStorages: [],
-                darkElixirStorages: [], // Added dark elixir storages
+                darkElixirStorages: [], // Only for home village
                 townHalls: []  // or builderHalls for builder_base
             };
             
             // Collect current storage buildings
             current_buildings.forEach(building => {
-            if (building.village !== village) return;
-            
-            if (building.name === STORAGE_TYPES[village].GOLD) {
-                storageBuildings.goldStorages.push({id: building.id, level: building.level});
-            } else if (building.name === STORAGE_TYPES[village].ELIXIR) {
-                storageBuildings.elixirStorages.push({id: building.id, level: building.level});
-            } else if (building.name === STORAGE_TYPES[village].DARK_ELIXIR) { // Added dark elixir check
-                storageBuildings.darkElixirStorages.push({id: building.id, level: building.level});
-            } else if (building.name === STORAGE_TYPES[village].TOWN_HALL || 
-                    building.name === STORAGE_TYPES[village].BUILDER_HALL) {
-                storageBuildings.townHalls.push({id: building.id, level: building.level});
-            }
-        });
-            
+                if (building.village !== village) return;
+                
+                if (village === 'home') {
+                    if (building.name === STORAGE_TYPES[village].GOLD) {
+                        storageBuildings.goldStorages.push({id: building.id, level: building.level});
+                    } else if (building.name === STORAGE_TYPES[village].ELIXIR) {
+                        storageBuildings.elixirStorages.push({id: building.id, level: building.level});
+                    } else if (building.name === STORAGE_TYPES[village].DARK_ELIXIR) {
+                        storageBuildings.darkElixirStorages.push({id: building.id, level: building.level});
+                    } else if (building.name === STORAGE_TYPES[village].TOWN_HALL) {
+                        storageBuildings.townHalls.push({id: building.id, level: building.level});
+                    }
+                } else if (village === 'builderBase') {
+                    if (building.name === STORAGE_TYPES[village].BUILDER_HALL) {
+                        storageBuildings.townHalls.push({id: building.id, level: building.level});
+                    }
+                }
+            });
+                
             // Apply pending upgrades
             if (state.note.buildings.length) {
                 updatePendingStorageUpgrades(storageBuildings, village);
             }
-            
+                
             // Calculate capacities
             const capacities = calculateStorageCapacities(storageBuildings, village);
-            
+                
             // Update note with current resources and capacities
             updateNoteResources(capacities, village);
         }
     
         function updatePendingStorageUpgrades(storageBuildings, village) {
             state.note.buildings.forEach(upgrade => {
-                [
-                    {type: STORAGE_TYPES[village].GOLD, array: storageBuildings.goldStorages},
-                    {type: STORAGE_TYPES[village].ELIXIR, array: storageBuildings.elixirStorages},
-                    {type: STORAGE_TYPES[village].DARK_ELIXIR, array: storageBuildings.darkElixirStorages}, // Added dark elixir
-                    {type: STORAGE_TYPES[village].TOWN_HALL, array: storageBuildings.townHalls}
-                ].forEach(({type, array}) => {
-                    const index = array.findIndex(s => s.id === upgrade.id);
-                    if (index !== -1) {
-                        array[index].level = upgrade.level;
+                if (village === 'home') {
+                    [
+                        {type: STORAGE_TYPES[village].GOLD, array: storageBuildings.goldStorages},
+                        {type: STORAGE_TYPES[village].ELIXIR, array: storageBuildings.elixirStorages},
+                        {type: STORAGE_TYPES[village].DARK_ELIXIR, array: storageBuildings.darkElixirStorages},
+                        {type: STORAGE_TYPES[village].TOWN_HALL, array: storageBuildings.townHalls}
+                    ].forEach(({type, array}) => {
+                        const index = array.findIndex(s => s.id === upgrade.id);
+                        if (index !== -1) {
+                            array[index].level = upgrade.level;
+                        }
+                    });
+                } else if (village === 'builderBase') {
+                    if (upgrade.name === STORAGE_TYPES[village].BUILDER_HALL) {
+                        const index = storageBuildings.townHalls.findIndex(s => s.id === upgrade.id);
+                        if (index !== -1) {
+                            storageBuildings.townHalls[index].level = upgrade.level;
+                        }
                     }
-                });
+                }
             });
         }
     
         function calculateStorageCapacities(storageBuildings, village) {
             const capacities = {
                 gold: 0,
-                elixir: 0,
-                dark_elixir: 0
+                elixir: 0
             };
 
-            // Add gold building capacities
-            storageBuildings.goldStorages.forEach(storage => {
-                capacities.gold += storages[village].gold_storage[storage.level].g;
-            });
-            storageBuildings.elixirStorages.forEach(storage => {
-                capacities.elixir += storages[village].elixir_storage[storage.level].e;
-            });
-            storageBuildings.darkElixirStorages.forEach(storage => {
-                capacities.dark_elixir += storages[village].dark_elixir_storage[storage.level].de;
-            });
-
-            // Add town hall capacities
-            if (storageBuildings.townHalls.length) {
-                const level = storageBuildings.townHalls[0].level;
-                const townHallStorage = storages[village].town_hall[level];
-                Object.assign(capacities, {
-                    gold: capacities.gold + townHallStorage.g,
-                    elixir: capacities.elixir + townHallStorage.e,
-                    dark_elixir: capacities.dark_elixir + townHallStorage.de
+            if (village === 'home') {
+                capacities.dark_elixir = 0;
+                
+                // Add storage building capacities
+                storageBuildings.goldStorages.forEach(storage => {
+                    capacities.gold += storages[village].gold_storage[storage.level].g;
                 });
+                storageBuildings.elixirStorages.forEach(storage => {
+                    capacities.elixir += storages[village].elixir_storage[storage.level].e;
+                });
+                storageBuildings.darkElixirStorages.forEach(storage => {
+                    capacities.dark_elixir += storages[village].dark_elixir_storage[storage.level].de;
+                });
+
+                // Add town hall capacities
+                if (storageBuildings.townHalls.length) {
+                    const level = storageBuildings.townHalls[0].level;
+                    const townHallStorage = storages[village].town_hall[level];
+                    Object.assign(capacities, {
+                        gold: capacities.gold + townHallStorage.g,
+                        elixir: capacities.elixir + townHallStorage.e,
+                        dark_elixir: capacities.dark_elixir + townHallStorage.de
+                    });
+                }
+            } else if (village === 'builderBase') {
+                // For Builder Base, all storage comes from Builder Hall
+                if (storageBuildings.townHalls.length) {
+                    const level = storageBuildings.townHalls[0].level;
+                    // Fix: Use 'builderBase' instead of 'builderBase'
+                    const builderHallStorage = storages['builderBase'].builder_hall[level];
+                    Object.assign(capacities, {
+                        gold: builderHallStorage.g,
+                        elixir: builderHallStorage.e
+                    });
+                }
             }
 
             return capacities;
@@ -291,10 +333,10 @@
                     gems: state.resources.gems
                 };
             }
-
+    
             const resourceData = {};
             let hasResources = false;
-
+    
             // Add resources with capacities
             Object.entries(capacities).forEach(([resource, maxCapacity]) => {
                 if (maxCapacity > 0) {
@@ -308,7 +350,7 @@
                     }
                 }
             });
-
+    
             // Only add the village if it has resources
             if (hasResources) {
                 state.note.resources[village] = resourceData;
@@ -322,7 +364,7 @@
             } else {
                 delete state.note.resources.gems;
             }
-
+    
             // If no resources at all, delete the resources object
             if (Object.keys(state.note.resources).length === 0) {
                 delete state.note.resources;
