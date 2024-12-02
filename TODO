@@ -2,7 +2,12 @@ Things I need to fix/add, but aren't top priority:
 - Note Builder:
     - Allow for building level to be marked as upgraded and for a note of a new upgrade starting with proper new level.
     - Add walls with level selection.
+    - Catch cases where nothing is in the village and trying to add both village/builder will clash on ids. (no pun intended)
+    - Have the javascript handle current and currently building built buildings. (have all ids shown to client to detect that)
+    - When making an updated time based on gems, the "x time ago" is reset to the second of the update.
+    - Gem updates only work for buildings. Trying on troops breaks the json.
 - Player Page:
+    - Break this entire page up into components. It's getting too big.
     - Make all pulling of historical, current, and building data more efficient (do not do different calls and reads for each).
     - When a new player is added, give them all required buildings and troops for their town hall level (or hint at them to be added in bulk -- currently has to be done manually).
     - Add dark elixir storages.

@@ -3,6 +3,7 @@ import math
 import os
 from pathlib import Path
 from datetime import datetime
+import time
 
 # Third-party
 from fastapi.staticfiles import StaticFiles
@@ -39,8 +40,8 @@ METRICS = {
     'player.townHallLevel': None,
     'player.trophies': None,
     'player.bestTrophies': None,
-    'player.builderTrophies': None,
-    'player.bestbuilderTrophies': None,
+    'player.builderBaseTrophies': None,
+    'player.bestBuilderBaseTrophies': None,
     'player.expLevel': None,
     'player.multiplayerWins': 'Conqueror',
     'player.goldStolen': 'Gold Grab',
@@ -77,6 +78,7 @@ PLAYER_DATA, PLAYER_ALIASES, GLOBAL_BUILDING_DATA, GLOBAL_STORAGE_DATA = load_da
 def timeago(timestamp):
     now = datetime.now()
     try:
+            
         if isinstance(timestamp, (int, float)):
             if timestamp > 1e10:  # If timestamp is in milliseconds
                 timestamp = timestamp / 1000
@@ -285,11 +287,39 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
         'Tornado Trap',
     ]
 
+    list_priorities_builder = [
+        'Builder Hall',
+        'Double Cannon',
+        'Hidden Tesla',
+        'Cannon',
+        'Archer Tower',
+        'Firecrackers',
+        'Crusher',
+        'Elixir Collector',
+        'Elixir Storage',
+        'Gold Mine',
+        'Gold Storage',
+        'Gem Mine',
+        'Barracks',
+        'Army Camp',
+        'Star Laboratory',
+        'Spring Trap',
+        'Push Trap',
+        'Mine'
+    ]
+
     if os.path.exists(f'../manual_history/{player}.json'):
         buildings = {}
         audit = []
         buildings_log = []
         resources_log = []
+        
+        currently_upgrading = {
+            'building': [],
+            'hero': [],
+            'pet': [],
+            'troop': []
+        }
 
         with open(f'../manual_history/{player}.json', 'rb') as f:
             history = orjson.loads(f.read())
@@ -304,13 +334,95 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
                             if buildings[building['id']]['name'] != building['name']:
                                 audit.append(f"{timestamp} | Renamed: {buildings[building['id']]['name']} to {building['name']} (id #{building['id']})")
                         buildings[building['id']] = building
+                
+                if 'notes' in history[timestamp]:
+                    for note in history[timestamp]['notes']:
+                        if isinstance(note, dict):
+                            # Add all upgrade notes to currently_upgrading
+                            currently_upgrading[note['type']].append({**note, 'time': int(timestamp)})  # This preserves endTime
+                        else:
+                            # Process string notes (legacy format)
+                            if 'Hero:' in note:
+                                note = {'type': 'hero', 'str': note, 'time': int(timestamp)}
+                                note['village'] = note['str'].split(' - ')[0]
+                                note['hero'] = note['str'].split(' Hero:')[1].split(' to')[0]
+                                currently_upgrading['hero'].append(note)
+                            elif 'Troop:' in note:
+                                note = {'type': 'troop', 'str': note, 'time': int(timestamp)}
+                                note['village'] = note['str'].split(' - ')[0]
+                                note['troop'] = note['str'].split(' Troop:')[1]
+                                currently_upgrading['troop'].append(note)
+                            elif 'Pet:' in note:
+                                note = {'type': 'pet', 'str': note, 'time': int(timestamp)}
+                                note['village'] = note['str'].split(' - ')[0]
+                                note['id'] = int(note['str'].split(' (id #')[1].split(')')[0])
+                                note['pet'] = note['str'].split(' Pet:')[1].split(' to')[0]
+                                currently_upgrading['pet'].append(note)
+                            elif 'Started Upgrading' in note or 'Started Building' in note:
+                                note = {'type': 'building', 'str': note, 'time': int(timestamp)}
+                                note['village'] = note['str'].split(' - ')[0]
+                                note['id'] = int(note['str'].split(' (id #')[1].split(')')[0])
+                                note['name'] = note['str'].split(' Started ')[1].split(' to')[0]
+                                currently_upgrading['building'].append(note)
+                
                 if 'resources' in history[timestamp]:
                     resources_log.append({**history[timestamp]['resources'], 'time': int(timestamp)})
-
+                    
         buildings_list = list(buildings.values())
+
+        # Filter out completed upgrades
+        filtered_building_upgrades = []
+        current_time = int(time.time())
+        
+        # Get the most recent upgrade for each building
+        latest_upgrades = {}
+        for upgrade in reversed(currently_upgrading['building']):
+            if isinstance(upgrade, dict) and 'id' in upgrade:
+                if upgrade['id'] not in latest_upgrades:
+                    print(upgrade)
+                    latest_upgrades[upgrade['id']] = upgrade
+
+        # Now filter but preserve all fields
+        for upgrade in latest_upgrades.values():
+            building_id = upgrade['id']
+            current_building = next((b for b in buildings_list if b['id'] == building_id), None)
+            
+            if not current_building or (
+                ('level' in upgrade and current_building['level'] < upgrade['level']) or
+                ('weaponLevel' in upgrade and 
+                 'weaponLevel' in current_building and 
+                 current_building['weaponLevel'] < upgrade['weaponLevel'])
+            ):
+                filtered_building_upgrades.append(upgrade)  # Keep the entire upgrade object
+
+        currently_upgrading['building'] = filtered_building_upgrades
+        # Create a map of currently upgrading items by ID
+        upgrading_map = {}
+        
+        for upgrade in currently_upgrading['building']:
+            if isinstance(upgrade, dict) and 'id' in upgrade:
+                upgrading_map[upgrade['id']] = upgrade
+                if 'endTime' in upgrade and upgrade['endTime'] > current_time:
+                    upgrading_map[upgrade['id']]['endTime'] = upgrade['endTime']
+
+        # Attach upgrade status to buildings
+        for building in buildings_list:
+            building['isUpgrading'] = False
+            building['endTime'] = None
+            
+            if building['id'] in upgrading_map:
+                upgrade = upgrading_map[building['id']]
+                building['isUpgrading'] = True
+                if 'endTime' in upgrade:
+                    building['endTime'] = upgrade['endTime']
+
+        # Sort the buildings_list
         buildings_list.sort(
             key=lambda x: (
-                list_priorities.index(x['name']) if x['name'] in list_priorities else len(list_priorities),
+                list_priorities.index(x['name']) if x.get('village') == 'home' and x['name'] in list_priorities 
+                else list_priorities_builder.index(x['name']) if x.get('village') == 'builder' and x['name'] in list_priorities_builder
+                else len(list_priorities) + len(list_priorities_builder),
+                x.get('village', 'home'),
                 x['name'],
                 x.get('level', 0)
             )
@@ -318,13 +430,16 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
 
         buildings_log.reverse()
 
+        print(currently_upgrading)
+
         response = {
             'audit': audit,
             'logs': {
                 'upgrades': buildings_log,
                 'resources': resources_log
             },
-            'buildings': buildings_list
+            'buildings': buildings_list,
+            'currentlyUpgrading': currently_upgrading  # Keep the original currently_upgrading list
         }
                 
         return response, 200
