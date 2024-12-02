@@ -367,7 +367,7 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
                 
                 if 'resources' in history[timestamp]:
                     resources_log.append({**history[timestamp]['resources'], 'time': int(timestamp)})
-                    
+
         buildings_list = list(buildings.values())
 
         # Filter out completed upgrades
@@ -379,7 +379,6 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
         for upgrade in reversed(currently_upgrading['building']):
             if isinstance(upgrade, dict) and 'id' in upgrade:
                 if upgrade['id'] not in latest_upgrades:
-                    print(upgrade)
                     latest_upgrades[upgrade['id']] = upgrade
 
         # Now filter but preserve all fields
@@ -429,8 +428,6 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
         )
 
         buildings_log.reverse()
-
-        print(currently_upgrading)
 
         response = {
             'audit': audit,

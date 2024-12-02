@@ -95,17 +95,20 @@ clanning/
 │   └── {player tag}/             # Player directory
 │       └── {hash}.json           # Player data snapshot
 ├── manualhistory/                # Historical manual data
-│   └── {player tag}/             # Player directory
-│       └── {hash}.json           # Player data snapshot
+│   └── {player tag}.json         # Manual data input file
 └── site/
     ├── server.py                 # Used to launch the FastAPI app
     ├── app.py                    # FastAPI app
     ├── templates/                # Jinja2 templates
+    │   └── components/           # Component templates
+    │       └── chart.html        # Chart component template
     │   ├── base.html             # Base template for all pages
     │   ├── index.html            # Simple landing page
     │   ├── player.html           # Player page
     │   └── players.html          # Player list page
     └── static/                   # Static files
-        ├── data/...              # JSON data files for site (buildings, storages, etc.)
-        └── images/...            # Images (buildings, heroes, troops, etc.)
+    │   ├── data/...              # JSON data files for site (buildings, storages, etc.)
+    │   └── images/...            # Images (buildings, heroes, troops, etc.)
+    └── utils/                    # Utilities for site
+        └── fastdeepdiff.py       # Fast deep difference functions
 ```
