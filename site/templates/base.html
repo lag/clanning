@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %} | clann.ing</title>
     
+    <link rel="stylesheet" href="/static/styling/main.css">
     {% block head %}
     <!-- Common CSS files here -->
     {% endblock %}
@@ -13,32 +14,32 @@
     <header>
         {% block header %}
         <nav>
-            <a href="/">Home</a>
-            <a href="/players">Players</a>
+            <div class="nav-container">
+                <a href="/" class="nav-brand">clann.ing</a>
+                <div class="nav-links">
+                    <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a>
+                    <a href="/players" class="nav-link {% if request.path == '/players' %}active{% endif %}">Players</a>
+                </div>
+            </div>
         </nav>
         {% endblock %}
     </header>
 
-    <hr>
-
-    <main>
+    <main class="container">
         {% block content %}
         <!-- Content will be inserted here -->
         {% endblock %}
     </main>
 
-    <hr>
-
     <footer>
-        {% block footer %}
-        This material is unofficial and is not endorsed by Supercell.
-            For more information see Supercell's Fan Content Policy: <a href="https://www.supercell.com/fan-content-policy">www.supercell.com/fan-content-policy</a>.
-        <p>Clone this yourself on <a href="https://github.com/lag/clanning">GitHub</a>.</p>
-        {% endblock %}
+        <div class="footer-content">
+            {% block footer %}
+            <p>This material is unofficial and is not endorsed by Supercell.
+            For more information see Supercell's Fan Content Policy: 
+            <a href="https://www.supercell.com/fan-content-policy">www.supercell.com/fan-content-policy</a></p>
+            <p>Clone this yourself on <a href="https://github.com/lag/clanning">GitHub</a></p>
+            {% endblock %}
+        </div>
     </footer>
-
-    {% block scripts %}
-    <!-- Common JavaScript files here -->
-    {% endblock %}
 </body>
 </html>

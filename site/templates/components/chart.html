@@ -1,7 +1,30 @@
-{% macro create_chart(chart_id, title, data, color="rgb(75, 192, 192)") %}
-<div class="chart-container">
-    <canvas id="{{ chart_id }}"></canvas>
-</div>
+{% macro create_chart(chart_id, title, description, data, color="rgb(45, 45, 45)") %}
+    {% if data and data.x and data.x|length > 1 %}
+        <div class="chart-wrapper">
+            <div class="chart-header">
+                <h3>{{ title }}</h3>
+                {% if description %}
+                    <p class="chart-description">{{ description }}</p>
+                {% endif %}
+            </div>
+            <div class="chart-container">
+                <canvas id="{{ chart_id }}"></canvas>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="chart-wrapper">
+            <div class="chart-header">
+                <h3>{{ title }}</h3>
+                {% if description %}
+                    <p class="chart-description">{{ description }}</p>
+                {% endif %}
+            </div>
+            <div class="chart-container empty-chart">
+                <p>Not enough data available.</p>
+            </div>
+        </div>
+    {% endif %}
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -14,11 +37,36 @@
             existingChart.destroy();
         }
 
+        // Format date helper function
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', { 
+                month: 'numeric', 
+                day: 'numeric'
+            });
+        }
+
+        function formatTooltipDate(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString('en-US', { 
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
         // Create data points with proper x,y format
         const dataPoints = {{ data.x | tojson }}.map((timestamp, index) => ({
             x: timestamp * 1000, // Convert to milliseconds
             y: {{ data.y | tojson }}[index]
         }));
+
+        // Find min and max timestamps from actual data
+        const timestamps = dataPoints.map(point => point.x);
+        const minTime = Math.min(...timestamps);
+        const maxTime = Math.max(...timestamps);
 
         new Chart(ctx, {
             type: 'line',
@@ -27,27 +75,46 @@
                     label: '{{ title }}',
                     data: dataPoints,
                     borderColor: '{{ color }}',
-                    backgroundColor: 'transparent',
-                    fill: false,
-                    tension: 0.1
+                    backgroundColor: 'rgba(45, 45, 45, 0.1)',
+                    fill: true,
+                    stepped: 'before',
+                    tension: 0,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHitRadius: 10,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: false,
+                layout: {
+                    padding: {
+                        left: 5,
+                        right: 45,
+                        top: 10,
+                        bottom: 10
+                    }
+                },
                 plugins: {
                     title: {
-                        display: true,
-                        text: '{{ title }}'
+                        display: false  // Removed title from chart
                     },
                     legend: {
                         display: false
                     },
                     tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: {
+                            size: 13
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        padding: 12,
                         callbacks: {
                             title: function(context) {
-                                return new Date(context[0].raw.x).toLocaleString();
+                                return formatTooltipDate(context[0].raw.x);
                             }
                         }
                     }
@@ -56,13 +123,38 @@
                     x: {
                         type: 'linear',
                         position: 'bottom',
+                        min: minTime,
+                        max: maxTime,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
                         ticks: {
                             callback: function(value) {
-                                return new Date(value).toLocaleString();
+                                return formatDate(value);
                             },
-                            maxRotation: 90,
-                            minRotation: 90
-                        }
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: {
+                                size: 11
+                            },
+                            maxTicksLimit: 8,
+                            source: 'data'
+                        },
+                        bounds: 'data'  // Ensure scale bounds match data
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        },
+                        beginAtZero: true,  // Start y-axis at 0
+                        bounds: 'data'  // Ensure scale bounds match data
                     }
                 }
             }
@@ -71,12 +163,50 @@
 </script>
 
 <style>
+    .chart-wrapper {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin: 20px 0;
+        overflow: hidden;
+        width: calc(50% - 10px);  /* Half width minus gap */
+        display: inline-block;
+    }
+
+    .chart-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .chart-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .chart-description {
+        margin: 8px 0 0 0;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
     .chart-container {
         position: relative;
-        height: 400px;
+        height: 300px;  /* Reduced from 400px */
         width: 100%;
         padding: 20px;
-        background: white;
+    }
+
+    .empty-chart {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-size: 0.9rem;
+        height: 300px;  /* Match chart height */
+        background: #fafafa;
     }
 </style>
 {% endmacro %}

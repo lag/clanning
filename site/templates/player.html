@@ -80,12 +80,23 @@
             width: 192px;
         }
 
-        /* Graphs */
-        .graphs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+        .charts-container {
+            display: flex;
+            flex-wrap: wrap;
             gap: 20px;
-            padding: 20px;
+            justify-content: space-between;  /* Distribute space evenly */
+            width: 100%;
+        }
+
+        .chart-wrapper {
+            width: calc(50% - 10px);  /* Half width minus half the gap */
+            box-sizing: border-box;  /* Ensure padding/border are included in width */
+        }
+
+        @media (max-width: 768px) {
+            .chart-wrapper {
+                width: 100%;  /* Full width on smaller screens */
+            }
         }
 
         /* Resource Inputs */
@@ -100,23 +111,6 @@
             padding: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            max-width: 500px;
-            width: 90%;
         }
 
         /* Form Elements */
@@ -137,31 +131,6 @@
             border-radius: 4px;
         }
 
-        #newBuildingForm button {
-            padding: 8px 16px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-        }
-
-        #newBuildingForm button[type="submit"] {
-            background: #4CAF50;
-            color: white;
-            border-color: #45a049;
-        }
-
-        /* Note Builder */
-        #note-builder {
-            width: 100%;
-            height: 500px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            resize: vertical;
-        }
-
         /* Utility Classes */
         .new-building-note {
             display: flex;
@@ -177,11 +146,286 @@
 
 {# Main Content #}
 {% block content %}
+    <button id="toggleNoteBuilder" class="toggle-note-builder">
+        Toggle Note Builder
+    </button>
+
+    <div id="noteBuilderModal" class="note-builder-container">
+        <div class="note-builder-header">
+            <h2>Note Builder</h2>
+            <p class="note-builder-description">This must be manually added to the historical file until authentication is implemented.</p>
+        </div>
+
+        <div class="resource-inputs">
+            <input type="number" 
+                   id="gold-input" 
+                   placeholder="Gold" 
+                   class="resource-input"
+                   onchange="updateResource('gold', '{{requested_village}}', this.value)">
+            <input type="number" 
+                   id="elixir-input" 
+                   placeholder="Elixir" 
+                   class="resource-input"
+                   onchange="updateResource('elixir', '{{requested_village}}', this.value)">
+            <input type="number" 
+                   id="dark-elixir-input" 
+                   placeholder="Dark Elixir" 
+                   class="resource-input"
+                   onchange="updateResource('dark_elixir', '{{requested_village}}', this.value)">
+            <input type="number" 
+                   id="gems-input" 
+                   placeholder="Gems" 
+                   class="resource-input"
+                   onchange="updateResource('gems', null, this.value)">
+        </div>
+
+        <div class="note-output">
+            <textarea readonly 
+                      id="note-builder" 
+                      placeholder="Start interaction and note will generate here!"
+                      spellcheck="false"></textarea>
+        </div>
+    </div>
+
+    <style>
+        .note-builder-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;  /* Center the header content */
+        }
+
+        .note-builder-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            padding-bottom: 8px;  /* Add space between title and description */
+        }
+
+        .note-builder-description {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+            padding: 0 16px;  /* Add horizontal padding to description */
+        }
+
+        .note-builder-container {
+            display: none;
+            position: absolute;  /* Changed from fixed to absolute */
+            top: 130px;  /* Initial position below toggle button */
+            right: 20px;
+            width: 400px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 1001;
+        }
+
+        .note-builder-container.fixed {
+            position: fixed;
+            top: 70px;  /* Adjusted to maintain spacing with fixed toggle button */
+        }
+
+        /* Optional: Add slide-down animation */
+        @keyframes slideDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .note-builder-container.visible {
+            display: block;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        .modal-content {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            color: #666;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .toggle-note-builder {
+            position: absolute;  /* Changed from fixed to absolute */
+            top: 80px;  /* Initial position below nav */
+            right: 20px;
+            z-index: 1001;
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: position 0.3s;  /* Smooth transition for position changes */
+        }
+
+        .toggle-note-builder.fixed {
+            position: fixed;
+            top: 20px;  /* Will touch the top when fixed */
+        }
+
+        .toggle-note-builder:hover {
+            background: #666;  /* Simple gray hover state */
+        }
+
+        .resource-inputs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .resource-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .resource-input:focus {
+            border-color: #000;
+        }
+
+        .resource-input::placeholder {
+            color: #999;
+        }
+
+        .note-output {
+            padding: 16px;
+        }
+
+        #note-builder {
+            width: 100%;
+            height: 400px;  /* Increased from 300px */
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            background: #fafafa;
+            color: #333;
+            resize: vertical;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        #note-builder::placeholder {
+            color: #999;
+        }
+
+        /* Hide number input spinners */
+        .resource-input::-webkit-outer-spin-button,
+        .resource-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .resource-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Animation classes */
+        .modal-slide-in {
+            animation: slideIn 0.3s forwards;
+        }
+
+        .modal-slide-out {
+            animation: slideOut 0.3s forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('toggleNoteBuilder');
+            const modal = document.getElementById('noteBuilderModal');
+            const initialOffset = toggleBtn.offsetTop;
+            let isVisible = false;
+
+            // Handle scroll behavior
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > initialOffset) {
+                    toggleBtn.classList.add('fixed');
+                    modal.classList.add('fixed');
+                } else {
+                    toggleBtn.classList.remove('fixed');
+                    modal.classList.remove('fixed');
+                }
+            });
+
+            // Handle modal toggle
+            toggleBtn.addEventListener('click', function() {
+                isVisible = !isVisible;
+                modal.style.display = isVisible ? 'block' : 'none';
+                if (isVisible) {
+                    modal.classList.add('visible');
+                } else {
+                    modal.classList.remove('visible');
+                }
+            });
+        });
+    </script>
+
     <div class="container">
         <div class="main-content">
-            {# Header #}
-            <h1>{{player_data.player.name}} ({{player_data.player.tag}})</h1>
-
             {# Village Navigation #}
             <div class="village-nav">
                 <a href="/player/{{player_data.player.tag[1:]}}/home" class="base-button {% if requested_village == 'home' %}active{% endif %}">Home Village</a>
@@ -189,194 +433,887 @@
             </div>
 
             {# Player Info #}
-            <div class="card">
-                <h2>Player</h2>
+            <div class="card player-overview">
+                <div class="player-header">
+                    <div class="player-identity">
+                        <div class="identity-flex">
+                            {% set hall_type = 'builder_hall' if requested_village == 'builder' else 'town_hall' %}
+                            {% set hall_level = player_data.player.builderHallLevel if requested_village == 'builder' else player_data.player.townHallLevel %}
+                            
+                            <img src="/static/images/{{requested_village}}/buildings/{{hall_type}}/{{hall_level}}{% if requested_village == 'home' and player_data.player.townHallWeaponLevel %}-{{player_data.player.townHallWeaponLevel}}{% endif %}.png" 
+                                 alt="{{hall_type|replace('_', ' ')|title}} {{hall_level}}" 
+                                 class="town-hall-image">
+                            <div class="identity-text">
+                                <h1>{{player_data.player.name}}</h1>
+                                <div class="player-tag">#{{player_data.player.tag[1:]}}</div>
+                                {% if player_data.player.clan %}
+                                    <div class="player-clan">
+                                        <img src="{{player_data.player.clan.badgeUrls.small}}" alt="Clan Badge" class="clan-badge">
+                                        <span>{{player_data.player.clan.name}}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="player-stats-grid">
+                        {% if requested_village == 'home' %}
+                            <div class="stat-card">
+                                <div class="stat-value">{{player_data.player.townHallLevel}}</div>
+                                <div class="stat-label">Town Hall</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{player_data.player.expLevel}}</div>
+                                <div class="stat-label">Level</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{player_data.player.trophies}}</div>
+                                <div class="stat-label">Trophies</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{player_data.player.warStars}}</div>
+                                <div class="stat-label">War Stars</div>
+                            </div>
+                        {% elif requested_village == 'builder' %}
+                            <div class="stat-card">
+                                <div class="stat-value">{{player_data.player.builderHallLevel}}</div>
+                                <div class="stat-label">Builder Hall</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{player_data.player.expLevel}}</div>
+                                <div class="stat-label">Level</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{player_data.player.builderBaseTrophies}}</div>
+                                <div class="stat-label">Trophies</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{player_data.player.bestBuilderBaseTrophies}}</div>
+                                <div class="stat-label">Best Trophies</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
                 {% if requested_village == 'home' %}
-                    {% for key in ['townHallLevel', 'townHallWeaponLevel', 'expLevel', 'trophies', 'bestTrophies', 'warStars', 'attackWins', 'defenseWins', 'donations', 'donationsReceived', 'clanCapitalContributions'] %}
-                        <p>{{key}}: {{player_data.player[key]}}</p>
-                    {% endfor %}
-                {% elif requested_village == 'builder' %}
-                    {% for key in ['builderHallLevel', 'expLevel', 'builderBaseTrophies', 'bestBuilderBaseTrophies'] %}
-                        <p>{{key}}: {{player_data.player[key]}}</p>
-                    {% endfor %}
+                    <div class="player-achievements">
+                        <div class="achievement-grid">
+                            <div class="achievement-card">
+                                <div class="achievement-value">{{player_data.player.attackWins}}</div>
+                                <div class="achievement-label">Attack Wins</div>
+                            </div>
+                            <div class="achievement-card">
+                                <div class="achievement-value">{{player_data.player.defenseWins}}</div>
+                                <div class="achievement-label">Defense Wins</div>
+                            </div>
+                            <div class="achievement-card">
+                                <div class="achievement-value">{{player_data.player.donations}}</div>
+                                <div class="achievement-label">Troops Donated</div>
+                            </div>
+                            <div class="achievement-card">
+                                <div class="achievement-value">{{player_data.player.donationsReceived}}</div>
+                                <div class="achievement-label">Troops Received</div>
+                            </div>
+                        </div>
+                    </div>
                 {% endif %}
             </div>
 
-            {# Heroes Section #}
-            {% if player_data.player.heroes %}
-                <div class="card">
-                    <h2>Heroes</h2>
-                    <div class="flex-grid">
-                        {% for hero in player_data.player.heroes %}
-                            {% if hero.village == requested_village %}
-                                <div class="item-card">
-                                    <div>
-                                        <img height="64" src="/static/images/{{hero.village}}/heroes/{{hero.name|lower|replace(" ","_")|replace(".","")}}
-/avatar.png" alt="{{hero.name}}">
-                                        <p>{{hero.name}}</p>
-                                        <p>Level {{hero.level}}</p>
-                                    </div>
-                                    <div>
-                                        {% for equipment in player_data.heroesFormatted[hero.village][hero.name]['equipment'] %}
-                                            <div class="card">
-                                                <img height="32" src="/static/images/{{hero.village}}/hero_equipment/{{equipment.name|lower|replace(" ","_")|replace(".","")}}
-.png" alt="{{equipment.name}}">
-                                                <p>{{equipment.name}}: {{equipment.level}}/{{equipment.maxLevel}} {%if equipment.selected %}✔️{%endif%}</p>
-                                            </div>
-                                        {% endfor %}
+            <style>
+                .player-overview {
+                    background: white;
+                    border-radius: 8px;
+                    padding: 24px;
+                    margin-bottom: 24px;
+                }
+
+                .player-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 24px;
+                }
+
+                .player-identity h1 {
+                    margin: 0;
+                    font-size: 2rem;
+                    color: var(--primary-color);
+                }
+
+                .player-tag {
+                    font-size: 1.1rem;
+                    color: #666;
+                    margin: 4px 0;
+                }
+
+                .player-clan {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-top: 8px;
+                }
+
+                .clan-badge {
+                    width: 24px;
+                    height: 24px;
+                }
+
+                .player-stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 16px;
+                }
+
+                .stat-card {
+                    background: var(--background-color);
+                    padding: 16px;
+                    border-radius: 6px;
+                    text-align: center;
+                }
+
+                .stat-value {
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    color: var(--primary-color);
+                }
+
+                .stat-label {
+                    font-size: 0.9rem;
+                    color: #666;
+                    margin-top: 4px;
+                }
+
+                .player-achievements {
+                    margin-top: 24px;
+                    padding-top: 24px;
+                    border-top: 1px solid var(--border-color);
+                }
+
+                .achievement-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 16px;
+                }
+
+                .achievement-card {
+                    text-align: center;
+                }
+
+                .achievement-value {
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                    color: var(--primary-color);
+                }
+
+                .achievement-label {
+                    font-size: 0.85rem;
+                    color: #666;
+                    margin-top: 4px;
+                }
+
+                @media (max-width: 768px) {
+                    .player-header {
+                        flex-direction: column;
+                        gap: 20px;
+                    }
+
+                    .player-stats-grid,
+                    .achievement-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+                }
+
+                .identity-flex {
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                }
+
+                .town-hall-image {
+                    width: 80px;
+                    height: 80px;
+                    object-fit: contain;
+                }
+
+                .identity-text {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                /* Update existing player-identity styles */
+                .player-identity h1 {
+                    margin: 0;
+                    font-size: 2rem;
+                    color: var(--primary-color);
+                    line-height: 1.2;
+                }
+
+                @media (max-width: 768px) {
+                    .identity-flex {
+                        gap: 16px;
+                    }
+
+                    .town-hall-image {
+                        width: 60px;
+                        height: 60px;
+                    }
+                }
+            </style>
+
+            {# Walls Section #}
+            <div class="card">
+                <h2>Walls</h2>
+                <div class="walls-container">
+                    {% if buildings_data.walls_count and buildings_data.walls_count[requested_village] %}
+                        <div class="walls-stats">
+                            {% set total_walls = buildings_data.walls_count[requested_village].values()|sum %}
+                            {% for level, count in buildings_data.walls_count[requested_village].items() %}
+                                <div class="wall-level-stat">
+                                    <img src="/static/images/{{requested_village}}/buildings/walls/{{level}}.png" 
+                                         alt="Level {{level}} Wall"
+                                         class="wall-image">
+                                    <div class="wall-count">
+                                        <span class="level">Level {{level}}</span>
+                                        <span class="count">×{{count}}</span>
                                     </div>
                                 </div>
+                            {% endfor %}
+                        </div>
+                        <div class="wall-chart-container">
+                            <canvas id="wallDistributionChart"></canvas>
+                        </div>
+                    {% else %}
+                        <p>No wall data available for this village.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const ctx = document.getElementById('wallDistributionChart');
+                    if (!ctx) return;
+                
+                    const wallData = {{ buildings_data.walls_count[requested_village]|tojson|safe if buildings_data.walls_count and buildings_data.walls_count[requested_village] else {} }};
+                    const total = Object.values(wallData).reduce((a, b) => a + b, 0);
+                    
+                    // Wall colors mapping
+                    const wallColors = {
+                        home: {
+                            "1": "rgb(187, 182, 176)",
+                            "2": "rgb(191, 190, 189)",
+                            "3": "rgb(181, 179, 178)",
+                            "4": "rgb(157, 155, 152)",
+                            "5": "rgb(168, 158, 139)",
+                            "6": "rgb(192, 179, 189)",
+                            "7": "rgb(162, 157, 165)",
+                            "8": "rgb(162, 161, 161)",
+                            "9": "rgb(148, 148, 149)",
+                            "10": "rgb(170, 169, 167)",
+                            "11": "rgb(164, 152, 142)",
+                            "12": "rgb(72, 66, 59)",
+                            "13": "rgb(48, 56, 66)",
+                            "14": "rgb(30, 34, 41)",
+                            "15": "rgb(37, 28, 18)",
+                            "16": "rgb(122, 120, 125)",
+                            "17": "rgb(127, 100, 71)",
+                            "18": "rgb(86, 83, 66)"
+                        },
+                        builder: {
+                            "1": "rgb(30, 21, 12)",
+                            "2": "rgb(48, 35, 24)",
+                            "3": "rgb(41, 31, 21)",
+                            "4": "rgb(34, 35, 37)",
+                            "5": "rgb(33, 31, 33)",
+                            "6": "rgb(44, 38, 37)",
+                            "7": "rgb(43, 33, 31)",
+                            "8": "rgb(34, 34, 43)",
+                            "9": "rgb(72, 67, 72)",
+                            "10": "rgb(68, 60, 61)"
+                        }
+                    };
+
+                    const currentVillage = "{{ requested_village }}";
+                    const villageColors = wallColors[currentVillage];
+                    
+                    const datasets = Object.entries(wallData).map(([level, count]) => ({
+                        label: `Level ${level}`,
+                        data: [(count / total) * 100],
+                        backgroundColor: villageColors[level]
+                    }));
+                
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: [''],
+                            datasets: datasets
+                        },
+                        options: {
+                            animation: {
+                                duration: 0
+                            },
+                            hover: {
+                                animationDuration: 0
+                            },
+                            responsiveAnimationDuration: 0,
+                            indexAxis: 'y',
+                            stacked: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const level = context.dataset.label.split(' ')[1];
+                                            return `Level ${level}: ${context.parsed.x.toFixed(1)}% (${wallData[level]} walls)`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    stacked: true,
+                                    display: false,
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    stacked: true,
+                                    display: false,
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            maintainAspectRatio: false,
+                            responsive: true,
+                            layout: {
+                                padding: 0
+                            }
+                        }
+                    });
+                });
+            </script>
+
+            <style>
+                .walls-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                }
+                
+                .walls-stats {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    justify-content: center;  /* Center the wall cards */
+                }
+                
+                .wall-level-stat {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px;
+                    background: var(--background-color);
+                    border-radius: 4px;
+                    min-width: 120px;
+                }
+                
+                .wall-chart-container {
+                    height: 30px !important;  /* Force height */
+                    width: 100%;
+                    position: relative;
+                }
+                
+                #wallDistributionChart {
+                    height: 30px !important;  /* Force canvas height */
+                }
+                
+                .wall-image {
+                    width: 32px;
+                    height: 32px;
+                    object-fit: contain;
+                }
+                
+                .wall-count {
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .wall-count .level {
+                    font-size: 0.9rem;
+                    color: #666;
+                }
+                
+                .wall-count .count {
+                    font-size: 1.1rem;
+                    font-weight: 500;
+                }
+            </style>
+
+            {# Builders Status Section #}
+            <div class="card builders-status">
+                <div class="status-container">
+                    <div class="status-item">
+                        <h3>Builders</h3>
+                        {% set builder_count = buildings_data.buildings|selectattr('village', 'equalto', requested_village)|selectattr('name', 'equalto', "Builder's Hut")|list|length %}
+                        {% if requested_village == 'builder' %}
+                            {% set builder_count = builder_count + 1 %}  {# Add Master Builder for builder base #}
+                        {% elif requested_village == 'home' %}
+                            {% set has_bob = buildings_data.buildings|selectattr('village', 'equalto', 'home')|selectattr('name', 'equalto', "B.O.B's Hut")|list|length > 0 %}
+                            {% if has_bob %}
+                                {% set builder_count = builder_count + 1 %}  {# Add B.O.B for home village #}
                             {% endif %}
-                        {% endfor %}
+                        {% endif %}
+                        {% set upgrading_count = buildings_data.buildings|selectattr('village', 'equalto', requested_village)|selectattr('isUpgrading', 'equalto', true)|list|length %}
+                        <div class="status-value">{{ upgrading_count }} / {{ builder_count }}</div>
+                    </div>
+                    <div class="status-item">
+                        <h3>Laboratory</h3>
+                        {% set troop_upgrades = buildings_data.currentlyUpgrading.troop|selectLatestForVillage(requested_village) %}
+                        <div class="status-value">{{ 1 if troop_upgrades else 0 }} / 1</div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .builders-status {
+                    margin-bottom: 20px;
+                }
+
+                .status-container {
+                    display: flex;
+                    gap: 40px;
+                    justify-content: center; /* Center the items horizontally */
+                }
+
+.status-item {
+    flex: 1;
+    text-align: center; /* Center the text within each item */
+}
+
+.status-item h3 {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+.status-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 8px; /* Add some space between the title and the number */
+}
+</style>
+
+{# Buildings Section #}
+<div class="card">
+    <div class="buildings-header">
+        <h2>Buildings</h2>
+        <div class="buildings-controls">
+            <input type="text" 
+                   id="buildingSearch" 
+                   placeholder="Search buildings..." 
+                   class="building-search">
+            <button onclick="addNewBuilding()" class="add-building-btn">Add New Building</button>
+        </div>
+    </div>
+    
+    <p class="building-instructions">Left click to mark as upgraded, right click to add upgrade note</p>
+
+    <div id="newBuildingNotes" class="new-buildings-notes" style="display: none;">
+        <h3>New Buildings</h3>
+        <div id="newBuildingNotesList"></div>
+    </div>
+
+    <div class="buildings-grid" id="buildingsGrid">
+        {% for building in buildings_data.buildings %}
+            {% if building.village == requested_village %}
+            <div class="building-card {% if building.isUpgrading %}upgrading{% endif %}" 
+                onclick="selectItem('build', this)" 
+                data-info='{{ building|tojson|safe }}' 
+                data-type="build">
+                <img src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/{{building.level}}{% if building.weaponLevel %}-{{building.weaponLevel}}{% endif %}.png" 
+                    alt="{{building.name}}"
+                    class="building-image">
+                <div class="building-info">
+                    <div class="building-name">
+                        <span class="building-title">{{building.name}}</span>
+                        <span class="building-level">Level {{building.level}} {% if building.weaponLevel %}[{{building.weaponLevel}}]{% endif %}</span>
+                        <span class="building-id">#{{building.id}}</span>
+                    </div>
+                    {% if building.isUpgrading and building.endTime %}
+                        <span class="upgrade-time" data-endtime="{{building.endTime}}"></span>
+                        <button class="gem-input-btn" onclick="openGemModal(event, '{{building.name}}', {{building.level}}, 'building', {{building.id}})">⏰</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        {# Show new buildings under construction #}
+        {% for item in buildings_data.currentlyUpgrading.building %}
+            {% if item.village == requested_village and item.new %}
+                <div class="building-card new-building">
+                    <img src="/static/images/{{item.village}}/buildings/{{item.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
+/1.png" 
+                         alt="{{item.name}}"
+                         class="building-image">
+                    <div class="building-info" data-info='{{ item|tojson|safe }}' data-type="build">
+                        <div class="building-name">
+                            {{item.name}}:
+                            <span class="building-id">#{{item.id}}</span>
+                            (New)
+                        </div>
+                        {% if item.endTime %}
+                            <span class="upgrade-time" data-endtime="{{item.endTime}}"></span>
+                        {% endif %}
                     </div>
                 </div>
             {% endif %}
+        {% endfor %}
+    </div>
+</div>
 
-            {# Buildings Section #}
-            <div class="card">
-                <h2>Buildings</h2>
-                <p>Left click to mark as upgraded, right click to add upgrade note</p>
-                <button onclick="addNewBuilding()">Add New Building</button>
+<style>
+    .buildings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
 
-                <div id="newBuildingNotes" class="card" style="display: none;">
-                    <h3>New Buildings</h3>
-                    <div id="newBuildingNotesList"></div>
-                </div>
+    .buildings-controls {
+        display: flex;
+        gap: 10px;
+    }
 
-                {# Add search input #}
-                <div class="search-container" style="margin: 10px 0;">
-                    <input type="text" 
-                           id="buildingSearch" 
-                           placeholder="Search buildings..." 
-                           style="padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
+    .building-search {
+        padding: 6px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        width: 200px;
+    }
 
-                <div class="flex-grid" id="buildingsGrid">
-                    {# Show all buildings - both existing and under construction #}
-                    {% for building in buildings_data.buildings %}
-                        {% if building.village == requested_village %}
-                            <div class="item-card" {% if building.isUpgrading %}style="background-color: #e6f3ff; border: 2px dashed #3498db;"{% endif %}>
-                                {% if building.weaponLevel %}
-                                    <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
-/{{building.level}}-{{building.weaponLevel}}.png" alt="{{building.name}}">
-                                {% else %}
-                                    <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
-/{{building.level}}.png" alt="{{building.name}}">
-                                {% endif %}
-                                <div onclick="selectItem('build', this)" data-info='{{ building|tojson|safe }}' data-type="build">
-                                    <p>
-                                        {{building.name}}: {{building.level}}{% if building.weaponLevel %}-{{building.weaponLevel}}{% endif %} (ID: #{{building.id}})
-                                        {% if building.isUpgrading and building.endTime %}
-                                            <span class="upgrade-time" data-endtime="{{building.endTime}}"></span>
-                                        {% endif %}
-                                    </p>
-                                </div>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+    .add-building-btn {
+        padding: 6px 12px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
 
+    .building-instructions {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 8px 0;
+    }
+
+    .buildings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .building-card,
+.troop-card {
+    user-select: none;  /* Prevents text selection */
+    -webkit-user-select: none;  /* Safari */
+    -moz-user-select: none;     /* Firefox */
+    -ms-user-select: none;      /* IE/Edge */
+}
+
+    .building-card {
+        position: relative;  /* Ensure relative positioning for absolute children */
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        gap: 8px;
+    }
+
+    .building-card.upgrading {
+        background-color: #e6f3ff;
+        border: 1px dashed #3498db;
+    }
+
+    .building-card.new-building {
+        background-color: #e6ffe6;
+        border: 1px dashed #4CAF50;
+    }
+
+    .building-image {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+    }
+
+    .building-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .upgrade-time {
+        font-size: 0.8rem;
+        color: #666;
+        display: block;
+    }
+
+    .new-buildings-notes {
+        background: #f5f5f5;
+        padding: 12px;
+        border-radius: 4px;
+        margin: 12px 0;
+    }
+
+    @media (max-width: 768px) {
+        .buildings-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .buildings-controls {
+            flex-direction: column;
+        }
+
+        .building-search {
+            width: 100%;
+        }
+    }
+
+    .building-name {
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .building-title {
+        font-weight: 500;
+    }
+
+    .building-level {
+        color: #666;
+    }
+
+    .weapon-level {
+        color: #666;
+        font-size: 0.85rem;
+    }
+
+    .building-id {
+        color: #666;
+        font-size: 0.8rem;
+        margin-left: auto;
+    }
+
+    .new-buildings-notes {
+        background: #f9f9f9;
+        padding: 16px;
+        border-radius: 8px;
+        margin: 16px 0;
+        border: 1px solid var(--border-color);
+    }
+
+    .new-buildings-notes h3 {
+        margin-top: 0;
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        margin-bottom: 12px;
+    }
+
+    .new-building-note {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+
+    .new-building-note .note-image {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+    }
+
+    .new-building-note .note-text {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .new-building-note .building-title {
+        font-weight: 500;
+    }
+
+    .new-building-note .building-level {
+        color: #666;
+    }
+
+    .new-building-note .building-id {
+        color: #666;
+        font-size: 0.8rem;
+    }
+
+    .delete-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    .delete-btn:hover {
+        background-color: #ffebee;
+    }
+</style>
+
+{# Troops Section #}
+<div class="card">
+    <div class="troops-header">
+        <h2>Troops</h2>
+        <p class="troop-instructions">Right click to add upgrade note</p>
+    </div>
     
-                    {# Show new buildings under construction #}
-                    {% for item in buildings_data.currentlyUpgrading.building %}
-                        {% if item.village == requested_village and item.new %}
-                            <div class="item-card" style="background-color: #e6ffe6; border: 2px dashed #4CAF50;">
-                                <img height="64" src="/static/images/{{item.village}}/buildings/{{item.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
-/1.png" alt="{{item.name}}">
-                                <div data-info='{{ item|tojson|safe }}' data-type="build">
-                                    <p>
-                                        {{item.name}}: Under Construction (ID: #{{item.id}})
-                                        {% if item.endTime %}
-                                            <span class="upgrade-time" data-endtime="{{item.endTime}}"></span>
-                                        {% endif %}
-                                    </p>
-                                </div>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+    <div class="troops-grid">
+        {% for troop in player_data.player.troops %}
+            {% if (requested_village == 'home' and troop.village == 'home' and troop.name in [
+                "Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", 
+                "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", 
+                "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", 
+                "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", 
+                "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", 
+                "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"
+            ]) or (requested_village == 'builder' and troop.village == 'builder' and troop.name in [
+                "Raged Barbarian", "Sneaky Archer", "Boxer Giant", "Beta Minion", 
+                "Bomber", "Baby Dragon", "Cannon Cart", "Night Witch", "Drop Ship", 
+                "Power P.E.K.K.A", "Hog Glider", "Electrofire Wizard"
+            ]) %}
+            {% set latestTroopUpgrade = buildings_data.currentlyUpgrading.troop|selectLatestForVillage(troop.village) %}
+            <div class="troop-card {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}upgrading{% endif %}" 
+                onclick="selectItem('troop', this)" 
+                data-info='{{troop|tojson|safe}}' 
+                data-type="troop">
+                <img src="/static/images/{{troop.village}}/troops/{{troop.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/avatar.png" 
+                alt="{{troop.name}}"
+                class="troop-image">
+                <div class="troop-info">
+                    <div class="troop-name">
+                        <span class="troop-title">{{troop.name}}</span>
+                        <span class="troop-level">Level {{troop.level}}</span>
+                    </div>
+                    {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}
+                        <span class="upgrade-time" data-endtime="{{latestTroopUpgrade.endTime}}"></span>
+                        <button class="gem-input-btn" onclick="openGemModal(event, '{{troop.name}}', {{troop.level}}, 'troop')">⏰</button>
+                    {% endif %}
                 </div>
             </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
 
-            {# Troops Section #}
-            <div class="card">
-                <h2>Troops</h2>
-                <p>Right click to add upgrade note</p>
-                <div class="flex-grid">
-                    {% for troop in player_data.player.troops %}
-                        {% if (requested_village == 'home' and troop.village == 'home' and troop.name in [
-                            "Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", 
-                            "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", 
-                            "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", 
-                            "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", 
-                            "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", 
-                            "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"
-                        ]) or (requested_village == 'builder' and troop.village == 'builder' and troop.name in [
-                            "Raged Barbarian", "Sneaky Archer", "Boxer Giant", "Beta Minion", 
-                            "Bomber", "Baby Dragon", "Cannon Cart", "Night Witch", "Drop Ship", 
-                            "Power P.E.K.K.A", "Hog Glider", "Electrofire Wizard"
-                        ]) %}
-                            <div class="item-card troop-card" 
-                                {% if buildings_data.currentlyUpgrading.troop and buildings_data.currentlyUpgrading.troop[-1].name == troop.name %}
-                                    style="background-color: #e6f3ff; border: 2px dashed #3498db;"
-                                {% endif %}>
-                                <img height="64" src="/static/images/{{troop.village}}/troops/{{troop.name|lower|replace(" ","_")|replace(".","")}}
-/avatar.png" alt="{{troop.name}}">
-                                <div onclick="selectItem('troop','{{troop.name}}')" data-info='{{troop|tojson|safe}}' data-type="troop">
-                                    <p>
-                                        {{troop.name}}: {{troop.level}}
-                                        {% if buildings_data.currentlyUpgrading.troop and buildings_data.currentlyUpgrading.troop[-1].name == troop.name %}
-                                            <span class="upgrade-time" data-endtime="{{buildings_data.currentlyUpgrading.troop[-1].endTime}}"></span>
-                                        {% endif %}
-                                    </p>
-                                </div>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
+<style>
+    .troops-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
 
-            {# Currently Upgrading Section #}
-            {% if buildings_data.currentlyUpgrading %}
-            <div class="card">
-                <h2>Currently Upgrading</h2>
-                {% for type in buildings_data.currentlyUpgrading %}
-                    {% for item in buildings_data.currentlyUpgrading[type] %}
-                        {% if item.village == requested_village %}
-                        <div class="upgrade-item">
-                            <p>
-                                {% if item.time is defined %}
-                                    {{ item.time|int|timeago }}: [{{ type }}] 
-                                {% else %}
-                                    No time available: [{{ type }}]
-                                {% endif %}
-                                
-                                {% if type == 'building' %}
-                                    {{ item.name }} is being upgraded to level {{ item.level }} 
-                                    <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}" data-name="{{item.name}}" data-level="{{item.level}}">(ID: #{{ item.id }})</span>
-                                {% elif type == 'troop' %}
-                                    {{ item.name }} is being upgraded to level {{ item.level }}
-                                    <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}"></span>
-                                {% elif type == 'hero' %}
-                                    {{ item.hero }} is being upgraded
-                                    <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}"></span>
-                                {% elif type == 'pet' %}
-                                    {{ item.pet }} is being upgraded
-                                    <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}"></span>
-                                {% endif %}
-                                <button onclick="showGemInput(this)" class="gem-input-btn">Set Gems</button>
-                                {% if item.endTime %}
-                                    <span class="upgrade-time" data-endtime="{{item.endTime}}"></span>
-                                {% endif %}
-                            </p>
-                            <div class="gem-input-container" style="display: none;">
-                                <input type="number" class="gem-input" placeholder="Enter gems to finish">
-                                <button onclick="calculateTimeFromGems(this)">Calculate</button>
-                                <button onclick="hideGemInput(this)">Cancel</button>
-                            </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
-            </div>
+    .troop-instructions {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 0;
+    }
+
+    .troops-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;  /* Increased from 8px for better spacing */
+        padding: 8px;  /* Added padding around the grid */
+    }
+
+    .troop-card {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;  /* Increased padding */
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        cursor: pointer;
+        height: 84px;  /* Increased height to accommodate content */
+        box-sizing: border-box;
+    }
+
+    .troop-card.upgrading {
+        background-color: #e6f3ff;  /* Same light blue as buildings */
+        border: 1px dashed #3498db;  /* Same dashed blue border */
+    }
+
+    .troop-image {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+    }
+
+    .troop-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 6px;  /* Increased gap between elements */
+    }
+
+    .troop-name {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;  /* Increased gap between title and level */
+    }
+
+    .troop-title {
+        font-weight: 500;
+        font-size: 0.95rem;
+        line-height: 1.2;  /* Added line height */
+    }
+
+    .troop-level {
+        font-size: 0.85rem;
+        color: #666;
+        line-height: 1.2;  /* Added line height */
+    }
+
+    .upgrade-time {
+        font-size: 0.8rem;
+        color: #666;
+        line-height: 1.2;  /* Added line height */
+        margin-top: 2px;  /* Keep small top margin */
+    }
+
+    @media (max-width: 768px) {
+        .troops-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+    }
+</style>
 
         <script>
         // Constants and State Management
@@ -510,10 +1447,10 @@
 
         document.getElementById('buildingSearch').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
-            const buildings = document.getElementById('buildingsGrid').getElementsByClassName('item-card');
+            const buildings = document.getElementById('buildingsGrid').getElementsByClassName('building-card');
             
             Array.from(buildings).forEach(building => {
-                const buildingName = building.textContent.toLowerCase();
+                const buildingName = building.querySelector('.building-name').textContent.toLowerCase();
                 if (buildingName.includes(searchTerm)) {
                     building.style.display = 'flex';  // Keep flex display for layout
                 } else {
@@ -710,7 +1647,6 @@
     const buildingSelect = document.getElementById('buildingName');
     buildingSelect.innerHTML = '';
     
-    // Use the current village's buildings
     buildingsByVillage['{{requested_village}}'].forEach(building => {
         const option = document.createElement('option');
         option.value = building;
@@ -754,15 +1690,28 @@
             notesContainer.style.display = 'block';  // Show the container
             const buildingDiv = document.createElement('div');
             buildingDiv.className = 'new-building-note';
+            
+            // Create the new building note with updated styling
             buildingDiv.innerHTML = `
-                <p>${name} (Level ${level}) - ID #${id}</p>
-                <button onclick="deleteNewBuildingNote('building', '${name}', ${id}, this)" class="delete-btn">❌</button>
+                <img src="/static/images/${noteText.village}/buildings/${name.toLowerCase().replace(/ /g,'_')}/1.png" 
+                     alt="${name}" 
+                     class="note-image">
+                <div class="note-text">
+                    <span class="building-title">${name}</span>
+                    <span class="building-level">Level ${level}</span>
+                    <span class="building-id">#${id}</span>
+                </div>
+                <button onclick="deleteNewBuildingNote('building', '${name}', ${id}, this)" 
+                        class="delete-btn" 
+                        title="Remove">❌</button>
             `;
+            
             newBuildingsList.appendChild(buildingDiv);
         }
         
         updateNote();
-        closeNewBuildingModal();
+        modal.style.display = 'none';
+        form.reset();
     };
 }
 
@@ -822,17 +1771,50 @@
         // ===============
 
         function updateNote() {
-            // Create a timestamp-keyed object for the note
-            const noteParent = {
-                [Date.now()]: state.note
-            };
-            
-            // Update the note builder textarea
-            const noteBuilder = document.getElementById('note-builder');
-            if (noteBuilder) {
-                noteBuilder.value = JSON.stringify(noteParent, null, 4);
-            }
+    // Deep clone the state.note to avoid modifying the original
+    let cleanNote = JSON.parse(JSON.stringify(state.note));
+    
+    // Helper function to remove empty arrays and objects
+    function removeEmpty(obj) {
+        if (Array.isArray(obj)) {
+            // Filter out empty arrays/objects from arrays
+            obj = obj.filter(item => {
+                if (typeof item === 'object' && item !== null) {
+                    return Object.keys(removeEmpty(item)).length > 0;
+                }
+                return true;
+            });
+            // Return null if array is empty (will be removed by parent)
+            return obj.length ? obj : null;
+        } else if (typeof obj === 'object' && obj !== null) {
+            Object.keys(obj).forEach(key => {
+                if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    obj[key] = removeEmpty(obj[key]);
+                    if (obj[key] === null) {
+                        delete obj[key];
+                    }
+                }
+            });
+            // Return null if object is empty (will be removed by parent)
+            return Object.keys(obj).length ? obj : null;
         }
+        return obj;
+    }
+
+    // Clean the note
+    cleanNote = removeEmpty(cleanNote);
+
+    // Create a timestamp-keyed object for the note
+    const noteParent = cleanNote ? {
+        [Date.now()]: cleanNote
+    } : {};
+    
+    // Update the note builder textarea
+    const noteBuilder = document.getElementById('note-builder');
+    if (noteBuilder) {
+        noteBuilder.value = JSON.stringify(noteParent, null, 4);
+    }
+}
 
         // UI Event Handlers
         // =================
@@ -945,7 +1927,7 @@
             
             const timeSpan = parentP.querySelector('.time-remaining');
             if (timeSpan) {
-                timeSpan.textContent = ` (${timeStr} remaining)`;
+                timeSpan.textContent = ` (${timeStr})`;
                 hideGemInput(btn);
             }
         }
@@ -963,7 +1945,7 @@
                 if (endTime) {
                     const remaining = endTime - now;
                     if (remaining > 0) {
-                        el.textContent = ` (${formatTime(remaining)} remaining)`;
+                        el.textContent = ` (${formatTime(remaining)})`;
                     } else {
                         // If time is in the past, remove the upgrading status
                         const buildingCard = el.closest('.item-card');
@@ -1012,80 +1994,442 @@
             }
 
             .gem-input-btn {
-                margin-left: 5px;
-                padding: 2px 8px;
-                font-size: 0.9em;
+                position: absolute;
+                right: 8px;  /* Adjust from edge of card */
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 1;  /* Ensure button is clickable */
             }
         </style>
-        {% endif %}
 
         {# Recent Upgrades Section #}
-            <div class="card">
-                <h2>Recent Upgrade Logs</h2>
-                {% for log in buildings_data.logs.upgrades[:10] %}
-                    {% if log.village == requested_village %}
-                        <div class="flex-grid">
-                            <img height="64" src="/static/images/{{log.village}}/buildings/{{log.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
-/{{log.level}}.png" alt="{{log.name}}">
-                            <p>{{log.time|timeago}}: {{log.name}} (ID #{{log.id}}) was upgraded to level {{log.level}}</p>
-                        </div>
-                    {% endif %}
-                {% endfor %}
+        <div class="card">
+            <h2>Recent Upgrade Logs</h2>
+            <div class="upgrade-logs">
+                {% with count = namespace(value=0) %}  {# Create a namespace for the counter #}
+                    {% for log in buildings_data.logs.upgrades %}
+                        {% if log.village == requested_village and count.value < 10 %}
+                            <div class="upgrade-log-entry">
+                                <img height="64" src="/static/images/{{log.village}}/buildings/{{log.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}/{{log.level}}.png" alt="{{log.name}}" class="upgrade-log-image">
+                                <div class="upgrade-log-text">
+                                    <p>{{log.time|timeago}}: <strong>{{log.name}}</strong> (#{{log.id}}) was upgraded to Level {{log.level}}</p>
+                                </div>
+                            </div>
+                            {% set count.value = count.value + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                {% endwith %}
             </div>
+        </div>
+
+<style>
+    .upgrade-logs {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .upgrade-log-entry {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .upgrade-log-image {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        margin-right: 12px;
+    }
+
+    .upgrade-log-text {
+        flex: 1;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .upgrade-log-text p {
+        margin: 0;
+    }
+
+    .upgrade-log-text strong {
+        color: var(--primary-color);
+    }
+</style>
 
             {# Graphs Section #}
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <div class="graphs">    
+            <div class="charts-container">    
                 {% for metric, data in history_graphs.items() %}
-                    {{ create_chart(
-                        chart_id=metric.split(".")[-1] + "Chart",
-                        title=metric,
+                    {% if requested_village in GRAPH_METADATA[metric]['showFor']|default(['home', 'builder']) %} 
+                        {{ create_chart(
+                            metric.split(".")[-1] + "Chart",
+                        GRAPH_METADATA[metric]['title'],
+                        GRAPH_METADATA[metric]['description'],
                         data=data,
-                        color=loop.cycle(['rgb(75, 192, 192)', 'rgb(255, 99, 132)', 'rgb(255, 205, 86)', 'rgb(54, 162, 235)'])
-                    ) }}
+                        ) }}
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>
 
-        {# Sidebar #}
-        <div class="sidebar">
-            <h2>Note Builder</h2>
-            <p>This must be manually added to the historical file until authentication is implemented.</p>
-
-            <div class="resource-inputs">
-                <input type="number" id="gold-input" placeholder="Gold" class="resource-input"
-                       onchange="updateResource('gold', '{{requested_village}}', this.value)">
-                <input type="number" id="elixir-input" placeholder="Elixir" class="resource-input"
-                       onchange="updateResource('elixir', '{{requested_village}}', this.value)">
-                <input type="number" id="dark-elixir-input" placeholder="Dark Elixir" class="resource-input"
-                       onchange="updateResource('dark_elixir', '{{requested_village}}', this.value)">
-                <input type="number" id="gems-input" placeholder="Gems" class="resource-input"
-                       onchange="updateResource('gems', null, this.value)">
-            </div>
-
-            <textarea readonly id="note-builder" style="width: 100%; height: 500px;" 
-                      placeholder="Start interaction and note will generate here!"></textarea>
+    {# Modal HTML #}
+<div id="newBuildingModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Building</h2>
+            <span class="close" onclick="closeNewBuildingModal()">&times;</span>
         </div>
-    </div>
-
-    {# Modal #}
-    <div id="newBuildingModal" class="modal">
-        <h3>Add New Building</h3>
         <form id="newBuildingForm">
-            <div>
-                <label for="buildingName">Building:</label>
+            <div class="form-group">
+                <label for="buildingName">Building Name</label>
                 <select id="buildingName" required></select>
             </div>
-            <div>
-                <label for="buildingLevel">Level:</label>
+            
+            <div class="form-group">
+                <label for="buildingLevel">Level</label>
                 <input type="number" id="buildingLevel" min="1" required>
             </div>
-            <button type="submit">Add Building</button>
-            <button type="button" onclick="closeNewBuildingModal()">Cancel</button>
+
+            <button type="submit" class="submit-btn">Add Building</button>
         </form>
     </div>
+</div>
+
+<style>
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: 15vh auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        width: 90%;
+        max-width: 400px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        color: var(--primary-color);
+        font-size: 1.5rem;
+    }
+
+    .close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .close:hover {
+        color: #666;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .form-group select,
+    .form-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 10px;
+        background-color: #000;  /* Changed from var(--primary-color) to #000 */
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .submit-btn:hover {
+        background-color: #333;  /* Changed from var(--hover-color) to #333 */
+    }
+</style>
+<script>
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('newBuildingModal');
+        if (event.target == modal) {
+            closeNewBuildingModal();
+        }
+    }
+    </script>
+
+<div id="gemModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Enter Gems</h2>
+            <span class="close" onclick="closeGemModal()">&times;</span>
+        </div>
+        <form id="gemForm" onsubmit="return false;">
+            <div class="form-group">
+                <label for="gemsInput">Gems:</label>
+                <input type="number" id="gemsInput" min="0" required oninput="updateTimePreview(this.value)">
+                <div id="timePreview" class="time-preview"></div>
+            </div>
+            <button type="button" onclick="submitGems()" class="submit-btn">Submit</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    #gemModal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    #gemModal .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: 15vh auto;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        width: 90%;
+        max-width: 400px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .gem-input-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 0;
+        margin-top: 4px;
+    }
+
+    #gemModal .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    #gemModal .modal-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    #gemModal .close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    #gemModal .close:hover {
+        color: #666;
+    }
+
+    #gemModal .form-group {
+        margin-bottom: 15px;
+    }
+
+    #gemModal .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+    }
+
+    #gemModal .form-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    #gemModal .time-preview {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        color: #666;
+        min-height: 20px;
+    }
+
+    #gemModal .submit-btn {
+        width: 100%;
+        padding: 10px;
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    #gemModal .submit-btn:hover {
+        background-color: #333;
+    }
+</style>
+
+<script>
+let currentItemName = '';
+let currentItemLevel = 0;
+let currentItemType = '';
+let currentItemId = null;  // Track the ID
+
+function openGemModal(event, itemName, itemLevel, itemType, itemId = null) {  // Accept itemId
+    event.stopPropagation();
+    currentItemName = itemName;
+    currentItemLevel = itemLevel;
+    currentItemType = itemType;
+    currentItemId = itemId;  // Store the ID
+    currentItemVillage = '{{requested_village}}';
+    const modal = document.getElementById('gemModal');
+    modal.style.display = 'block';
+}
+
+function submitGems() {
+    const gems = parseInt(document.getElementById('gemsInput').value);
+    if (isNaN(gems) || gems < 0) {
+        alert('Please enter a valid number of gems');
+        return;
+    }
+    
+    const seconds = gemsToTime(gems);
+    const finishTime = Math.floor(Date.now() / 1000) + seconds;
+    
+    // Initialize notes array if it doesn't exist
+    if (!state.note.notes) {
+        state.note.notes = [];
+    }
+    
+    // Remove any existing notes for this troop/building
+    state.note.notes = state.note.notes.filter(note => {
+        if (currentItemId !== null) {
+            // For buildings, check ID
+            return note.id !== currentItemId;
+        } else {
+            // For troops, check name and village
+            return !(
+                note.type === currentItemType &&
+                note.name === currentItemName &&
+                note.village === currentItemVillage
+            );
+        }
+    });
+    
+    // Add the new note
+    const newNote = {
+        village: currentItemVillage,
+        type: currentItemType,
+        name: currentItemName,
+        level: currentItemLevel + 1,
+        endTime: finishTime
+    };
+    
+    // Add ID if it exists
+    if (currentItemId !== null) {
+        newNote.id = currentItemId;
+    }
+    
+    state.note.notes.push(newNote);
+    
+    updateNote();
+    closeGemModal();
+}
+
+function updateTimePreview(gems) {
+    const preview = document.getElementById('timePreview');
+    if (!gems || isNaN(gems) || gems < 0) {
+        preview.textContent = '';
+        return;
+    }
+    
+    const seconds = gemsToTime(parseInt(gems));
+    const timeString = formatTime(seconds);
+    
+    preview.textContent = `Time to complete: ${timeString}`;
+}
+
+function closeGemModal() {
+    const modal = document.getElementById('gemModal');
+    modal.style.display = 'none';
+    document.getElementById('gemForm').reset();
+    document.getElementById('timePreview').textContent = '';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('gemModal');
+    if (event.target == modal) {
+        closeGemModal();
+    }
+}
+</script>
 {% endblock %}
 
 {% block footer %}
     {{ super() }}
 {% endblock %}
+
+<script>
+document.querySelectorAll('.building-card').forEach(card => {
+    // Prevent image dragging
+    card.querySelector('img').addEventListener('dragstart', e => e.preventDefault());
+    
+    // Add right-click handler to entire card
+    card.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        // Your existing right-click handling code here
+        selectItem('build', this);
+    });
+});
+document.querySelectorAll('.troop-card').forEach(card => {
+    // Prevent image dragging
+    card.querySelector('img').addEventListener('dragstart', e => e.preventDefault());
+    
+    // Add right-click handler to entire card
+    card.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        selectItem('troop', this);
+    });
+});
+</script>

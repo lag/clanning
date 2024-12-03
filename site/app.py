@@ -49,6 +49,59 @@ METRICS = {
     'player.obstaclesRemoved': 'Nice and Tidy'
 }
 
+GRAPH_METADATA = {
+    'player.townHallLevel': {
+        'title': 'Town Hall Level',
+        'description': 'The level of the player\'s Town Hall.',
+        'showFor': ['home']
+    },
+    'player.trophies': {
+        'title': 'Trophies',
+        'description': 'The number of trophies a player has collected in their Home Village.',
+        'showFor': ['home']
+    },
+    'player.bestTrophies': {
+        'title': 'Best Trophies',
+        'description': 'The highest number of trophies a player has achieved in their Home Village.',
+        'showFor': ['home']
+    },
+    'player.builderBaseTrophies': {
+        'title': 'Builder Base Trophies',
+        'description': 'The number of trophies a player has collected in Builder Base.',
+        'showFor': ['builder']
+    },
+    'player.bestBuilderBaseTrophies': {
+        'title': 'Best Builder Base Trophies',
+        'description': 'The highest number of trophies a player has achieved in Builder Base.',
+        'showFor': ['builder']
+    },
+    'player.expLevel': {
+        'title': 'Experience Level',
+        'description': 'The player\'s experience level.',
+        'showFor': ['home', 'builder']
+    },
+    'player.multiplayerWins': {
+        'title': 'Multiplayer Wins',
+        'description': 'The number of wins a player has in the Home Village\'s Multiplayer.',
+        'showFor': ['home']
+    },
+    'player.goldStolen': {
+        'title': 'Gold Stolen',
+        'description': 'The number of gold a player has stolen from other players in the Home Village.',
+        'showFor': ['home']
+    },
+    'player.elixirStolen': {
+        'title': 'Elixir Stolen',
+        'description': 'The number of elixir a player has stolen from other players in the Home Village.',
+        'showFor': ['home']
+    },
+    'player.obstaclesRemoved': {
+        'title': 'Obstacles Removed',
+        'description': 'The number of obstacles a player has removed in both villages.',
+        'showFor': ['home', 'builder']
+    },
+}
+
 # Load data files once at startup
 def load_data_files():
     try:
@@ -74,6 +127,16 @@ def load_data_files():
         raise
 
 PLAYER_DATA, PLAYER_ALIASES, GLOBAL_BUILDING_DATA, GLOBAL_STORAGE_DATA = load_data_files()
+
+# Add our new filter
+def select_latest_for_village(upgrades, village):
+    if not upgrades:
+        return None
+    # Go through the list in reverse to find the latest upgrade for this village
+    for upgrade in reversed(upgrades):
+        if upgrade.get('village') == village:
+            return upgrade
+    return None
 
 def timeago(timestamp):
     now = datetime.now()
@@ -106,9 +169,17 @@ def timeago(timestamp):
     except Exception as e:
         print(f"Error in timeago filter: {e}")  # For debugging
         return timestamp  # Return original timestamp if parsing fails
-    
+
+def divide_filter(value, divisor):
+    try:
+        return float(value) / float(divisor)
+    except (ValueError, ZeroDivisionError):
+        return 0
+
 templates = Jinja2Templates(directory="templates")
 templates.env.filters["timeago"] = timeago
+templates.env.filters["selectLatestForVillage"] = select_latest_for_village
+templates.env.filters["divide"] = divide_filter
 
 class InvalidPathError(Exception):pass
 
@@ -209,6 +280,7 @@ async def _get_player_history(player: str) -> tuple[dict, int]:
                 with open(player_path / file, 'rb') as f:
                     data = orjson.loads(decompress(f.read()))
                     history[data['time']] = data
+
             except Exception as e:
                 print(f"Error reading file {file}: {str(e)}")
                 continue
@@ -313,6 +385,8 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
         audit = []
         buildings_log = []
         resources_log = []
+
+        walls_count = {'home': None, 'builder': None} 
         
         currently_upgrading = {
             'building': [],
@@ -367,6 +441,11 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
                 
                 if 'resources' in history[timestamp]:
                     resources_log.append({**history[timestamp]['resources'], 'time': int(timestamp)})
+
+                if 'walls' in history[timestamp]:
+                    for village in ['home', 'builder']:
+                        if village in history[timestamp]['walls']:
+                            walls_count[village] = history[timestamp]['walls'][village]
 
         buildings_list = list(buildings.values())
 
@@ -436,7 +515,8 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
                 'resources': resources_log
             },
             'buildings': buildings_list,
-            'currentlyUpgrading': currently_upgrading  # Keep the original currently_upgrading list
+            'currentlyUpgrading': currently_upgrading,  # Keep the original currently_upgrading list
+            'walls_count': walls_count
         }
                 
         return response, 200
@@ -640,6 +720,7 @@ async def player_page(player: str, request: Request, village: str = 'home') -> s
             "history_data": history_data,
             "history_graphs": history_graphs,
             "buildings_data": buildings_data,
+            "GRAPH_METADATA": GRAPH_METADATA,
             "GLOBAL_BUILDING_DATA": GLOBAL_BUILDING_DATA,
             "GLOBAL_STORAGE_DATA": GLOBAL_STORAGE_DATA
         }
@@ -647,11 +728,33 @@ async def player_page(player: str, request: Request, village: str = 'home') -> s
 
 @app.get("/players", include_in_schema=False)
 async def players_page(request: Request) -> starlette.templating._TemplateResponse:
-    players = list(PLAYER_DATA.keys())
-    for i, player in enumerate(players):
-        if player[0] == '#':
-            players[i] = player[1:]
-    return templates.TemplateResponse("players.html", {"request": request, "players": players})
+    players_info = []
+    for tag in PLAYER_DATA.keys():
+        try:
+            player_data, status_code = await _get_player(tag)
+            if status_code == 200:
+                players_info.append({
+                    'tag': tag[1:],  # Remove # from tag
+                    'name': player_data['player']['name'],
+                    'expLevel': player_data['player']['expLevel'],
+                    'townHallLevel': player_data['player']['townHallLevel'],
+                    'townHallWeaponLevel': player_data['player'].get('townHallWeaponLevel', 0),  # Add weapon level
+                    'trophies': player_data['player']['trophies'],
+                    'builderHallLevel': player_data['player'].get('builderHallLevel', 0),
+                    'builderBaseTrophies': player_data['player'].get('builderBaseTrophies', 0),
+                    'clan': player_data.get('clan', {}).get('name', 'No Clan')
+                })
+        except Exception as e:
+            print(f"Error getting player data for {tag}: {e}")
+            continue
+    
+    # Sort by town hall level and trophies
+    players_info.sort(key=lambda x: (-x['townHallLevel'], -x['trophies']))
+    
+    return templates.TemplateResponse("players.html", {
+        "request": request, 
+        "players": players_info
+    })
 
 @app.get("/", include_in_schema=False)
 async def root(request: Request) -> starlette.templating._TemplateResponse:

@@ -5,6 +5,7 @@ Things I need to fix/add, but aren't top priority:
     - Catch cases where nothing is in the village and trying to add both village/builder will clash on ids. (no pun intended)
     - When making an updated time based on gems, the "x time ago" is reset to the second of the update.
     - Gem updates only work for buildings. Trying on troops breaks the json.
+    - Add support to town hall weapon level upgrades.
 - Player Page:
     - Break this entire page up into components. It's getting too big.
     - Make all pulling of historical, current, and building data more efficient (do not do different calls and reads for each).

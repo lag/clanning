@@ -2,15 +2,138 @@
 
 {% block title %}Home{% endblock %}
 
-{% block content %}
-    <h1>clann.ing</h1>
-    <p>
-        My end goal is to have a system to track and analyze the progress of my Clash of Clans accounts.
-        As of right now, this is all you've got to look at.
-    </p>
+{% block head %}
+    <style>
+        .hero-section {
+            text-align: center;
+            padding: 60px 20px;
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border-radius: 8px;
+            margin: 20px 0 40px 0;
+        }
+
+        .hero-section h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 60px 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+
+        .cta-button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 40px 0;
+        }
+
+        .info-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 40px 20px;
+            }
+
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 {% endblock %}
 
-{% block footer %}
-    <p>Additional footer content for home page</p>
-    {{ super() }}
+{% block content %}
+    <div class="hero-section">
+        <h1>clann.ing</h1>
+        <p>Advanced Clash of Clans Progress Tracking & Analytics</p>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>Progress Tracking</h3>
+            <p>Track building levels, hero upgrades, and resource collection across multiple accounts with detailed historical data.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Visual Analytics</h3>
+            <p>View your progression through interactive charts and graphs, showing everything from trophy counts to resource gathering achievements.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Multiple Villages</h3>
+            <p>Comprehensive tracking for both Home Village and Builder Base, including all buildings, troops, and heroes.</p>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h2>About This Project</h2>
+        <p>This is an open-source project designed to help Clash of Clans players track and analyze their progress over time. 
+           The system maintains historical records of player snapshots, allowing users to see how accounts have evolved, 
+           including building levels, hero upgrades, and resource collection.</p>
+    </div>
+
+    <div class="cta-section">
+        <a href="/players" class="cta-button">View Tracked Players</a>
+    </div>
+
+    <div class="info-section">
+        <h2>Getting Started</h2>
+        <p>Want to track your own accounts? This project is open source and available on GitHub. You can set up your own 
+           tracking system by following the installation instructions in the README.</p>
+        <p>Visit the <a href="https://github.com/lag/clanning">GitHub repository</a> to learn more about setting up your own instance.</p>
+    </div>
 {% endblock %}
