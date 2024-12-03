@@ -6,327 +6,377 @@
 
 {# Styles #}
 {% block head %}
-<style>
-    /* Layout */
-    .container {
-        display: flex;
-        gap: 20px;
-        padding: 20px;
-        max-width: 1600px;
-        margin: 0 auto;
-    }
+    <style>
+        /* Layout */
+        .container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
 
-    .main-content {
-        flex: 2;
-        min-width: 0; /* Prevents flex items from overflowing */
-    }
+        .main-content {
+            flex: 2;
+            min-width: 0; /* Prevents flex items from overflowing */
+        }
 
-    .sidebar {
-        flex: 1;
-        position: sticky;
-        top: 20px;
-        align-self: flex-start;
-        max-width: 400px;
-    }
+        .sidebar {
+            flex: 1;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            max-width: 400px;
+        }
 
-    /* Navigation */
-    .village-nav {
-        margin-bottom: 20px;
-    }
+        /* Navigation */
+        .village-nav {
+            margin-bottom: 20px;
+        }
 
-    .village-nav .base-button {
-        padding: 8px 16px;
-        margin-right: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        text-decoration: none;
-        color: black;
-    }
+        .village-nav .base-button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-decoration: none;
+            color: black;
+        }
 
-    .village-nav .base-button.active {
-        background-color: #eee;
-    }
+        .village-nav .base-button.active {
+            background-color: #eee;
+        }
 
-    /* Cards */
-    .card {
-        border: 1px solid #ccc;
-        padding: 15px;
-        margin-bottom: 15px;
-        border-radius: 4px;
-        background: white;
-    }
+        /* Cards */
+        .card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            background: white;
+        }
 
-    /* Grid and Flex Layouts */
-    .flex-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin: 10px 0;
-    }
+        /* Grid and Flex Layouts */
+        .flex-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
 
-    .item-card {
-        border: 1px solid #ccc;
-        padding: 10px;
-        width: 256px;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
-        background: white;
-        border-radius: 4px;
-    }
+        .item-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 256px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border-radius: 4px;
+        }
 
-    .troop-card {
-        width: 192px;
-    }
+        .troop-card {
+            width: 192px;
+        }
 
-    /* Graphs */
-    .graphs {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-        gap: 20px;
-        padding: 20px;
-    }
+        /* Graphs */
+        .graphs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
 
-    /* Resource Inputs */
-    .resource-inputs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
+        /* Resource Inputs */
+        .resource-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
-    .resource-input {
-        width: 100px;
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
+        .resource-input {
+            width: 100px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-    /* Modal */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        max-width: 500px;
-        width: 90%;
-    }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-width: 500px;
+            width: 90%;
+        }
 
-    /* Form Elements */
-    #newBuildingForm div {
-        margin-bottom: 15px;
-    }
+        /* Form Elements */
+        #newBuildingForm div {
+            margin-bottom: 15px;
+        }
 
-    #newBuildingForm label {
-        display: block;
-        margin-bottom: 5px;
-    }
+        #newBuildingForm label {
+            display: block;
+            margin-bottom: 5px;
+        }
 
-    #newBuildingForm select,
-    #newBuildingForm input {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
+        #newBuildingForm select,
+        #newBuildingForm input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-    #newBuildingForm button {
-        padding: 8px 16px;
-        margin-right: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background: white;
-        cursor: pointer;
-    }
+        #newBuildingForm button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
 
-    #newBuildingForm button[type="submit"] {
-        background: #4CAF50;
-        color: white;
-        border-color: #45a049;
-    }
+        #newBuildingForm button[type="submit"] {
+            background: #4CAF50;
+            color: white;
+            border-color: #45a049;
+        }
 
-    /* Note Builder */
-    #note-builder {
-        width: 100%;
-        height: 500px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        resize: vertical;
-    }
+        /* Note Builder */
+        #note-builder {
+            width: 100%;
+            height: 500px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
 
-    /* Utility Classes */
-    .new-building-note {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 5px;
-        padding: 5px;
-        background: #f5f5f5;
-        border-radius: 4px;
-    }
-</style>
+        /* Utility Classes */
+        .new-building-note {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+            padding: 5px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+    </style>
 {% endblock %}
 
 {# Main Content #}
 {% block content %}
-<div class="container">
-    <div class="main-content">
-        {# Header #}
-        <h1>{{player_data.player.name}} ({{player_data.player.tag}})</h1>
+    <div class="container">
+        <div class="main-content">
+            {# Header #}
+            <h1>{{player_data.player.name}} ({{player_data.player.tag}})</h1>
 
-        {# Village Navigation #}
-        <div class="village-nav">
-            <a href="/player/{{player_data.player.tag[1:]}}/home" class="base-button {% if requested_village == 'home' %}active{% endif %}">Home Village</a>
-            <a href="/player/{{player_data.player.tag[1:]}}/builder" class="base-button {% if requested_village == 'builder' %}active{% endif %}">Builder Base</a>
-        </div>
+            {# Village Navigation #}
+            <div class="village-nav">
+                <a href="/player/{{player_data.player.tag[1:]}}/home" class="base-button {% if requested_village == 'home' %}active{% endif %}">Home Village</a>
+                <a href="/player/{{player_data.player.tag[1:]}}/builder" class="base-button {% if requested_village == 'builder' %}active{% endif %}">Builder Base</a>
+            </div>
 
-        {# Player Info #}
-        <div class="card">
-            <h2>Player</h2>
-            {% if requested_village == 'home' %}
-                {% for key in ['townHallLevel', 'townHallWeaponLevel', 'expLevel', 'trophies', 'bestTrophies', 'warStars', 'attackWins', 'defenseWins', 'donations', 'donationsReceived', 'clanCapitalContributions'] %}
-                    <p>{{key}}: {{player_data.player[key]}}</p>
-                {% endfor %}
-            {% elif requested_village == 'builder' %}
-                {% for key in ['builderHallLevel', 'expLevel', 'builderBaseTrophies', 'bestBuilderBaseTrophies'] %}
-                    <p>{{key}}: {{player_data.player[key]}}</p>
-                {% endfor %}
-            {% endif %}
-        </div>
+            {# Player Info #}
+            <div class="card">
+                <h2>Player</h2>
+                {% if requested_village == 'home' %}
+                    {% for key in ['townHallLevel', 'townHallWeaponLevel', 'expLevel', 'trophies', 'bestTrophies', 'warStars', 'attackWins', 'defenseWins', 'donations', 'donationsReceived', 'clanCapitalContributions'] %}
+                        <p>{{key}}: {{player_data.player[key]}}</p>
+                    {% endfor %}
+                {% elif requested_village == 'builder' %}
+                    {% for key in ['builderHallLevel', 'expLevel', 'builderBaseTrophies', 'bestBuilderBaseTrophies'] %}
+                        <p>{{key}}: {{player_data.player[key]}}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
 
-        {# Heroes Section #}
-        {% if player_data.player.heroes %}
-        <div class="card">
-            <h2>Heroes</h2>
-            <div class="flex-grid">
-                {% for hero in player_data.player.heroes %}
-                {% if hero.village == requested_village %}
-                <div class="item-card">
-                    <div>
-                        <img height="64" src="/static/images/{{hero.village}}/heroes/{{hero.name|lower|replace(" ","_")|replace(".","")}}
+            {# Heroes Section #}
+            {% if player_data.player.heroes %}
+                <div class="card">
+                    <h2>Heroes</h2>
+                    <div class="flex-grid">
+                        {% for hero in player_data.player.heroes %}
+                            {% if hero.village == requested_village %}
+                                <div class="item-card">
+                                    <div>
+                                        <img height="64" src="/static/images/{{hero.village}}/heroes/{{hero.name|lower|replace(" ","_")|replace(".","")}}
 /avatar.png" alt="{{hero.name}}">
-                        <p>{{hero.name}}</p>
-                        <p>Level {{hero.level}}</p>
-                    </div>
-                    <div>
-                        {% for equipment in player_data.heroesFormatted[hero.village][hero.name]['equipment'] %}
-                        <div class="card">
-                            <img height="32" src="/static/images/{{hero.village}}/hero_equipment/{{equipment.name|lower|replace(" ","_")|replace(".","")}}
+                                        <p>{{hero.name}}</p>
+                                        <p>Level {{hero.level}}</p>
+                                    </div>
+                                    <div>
+                                        {% for equipment in player_data.heroesFormatted[hero.village][hero.name]['equipment'] %}
+                                            <div class="card">
+                                                <img height="32" src="/static/images/{{hero.village}}/hero_equipment/{{equipment.name|lower|replace(" ","_")|replace(".","")}}
 .png" alt="{{equipment.name}}">
-                            <p>{{equipment.name}}: {{equipment.level}}/{{equipment.maxLevel}} {%if equipment.selected %}✔️{%endif%}</p>
-                        </div>
+                                                <p>{{equipment.name}}: {{equipment.level}}/{{equipment.maxLevel}} {%if equipment.selected %}✔️{%endif%}</p>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 </div>
-                {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
+            {% endif %}
 
-        {# Buildings Section #}
-        <div class="card">
-            <h2>Buildings</h2>
-            <p>Left click to mark as upgraded, right click to add upgrade note</p>
-            <button onclick="addNewBuilding()">Add New Building</button>
+            {# Buildings Section #}
+            <div class="card">
+                <h2>Buildings</h2>
+                <p>Left click to mark as upgraded, right click to add upgrade note</p>
+                <button onclick="addNewBuilding()">Add New Building</button>
 
-            <div id="newBuildingNotes" class="card">
-                <div id="newBuildingNotesList"></div>
-            </div>
+                <div id="newBuildingNotes" class="card" style="display: none;">
+                    <h3>New Buildings</h3>
+                    <div id="newBuildingNotesList"></div>
+                </div>
 
-            <div class="flex-grid">
-                {% for building in buildings_data.buildings %}
-                {% if building.village == requested_village %}
-                <div class="item-card" {% if building.isUpgrading %}style="background-color: #f0f0f0;"{% endif %}>
-                    {% if building.weaponLevel %}
-                    <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
+                {# Add search input #}
+                <div class="search-container" style="margin: 10px 0;">
+                    <input type="text" 
+                           id="buildingSearch" 
+                           placeholder="Search buildings..." 
+                           style="padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
+                <div class="flex-grid" id="buildingsGrid">
+                    {# Show all buildings - both existing and under construction #}
+                    {% for building in buildings_data.buildings %}
+                        {% if building.village == requested_village %}
+                            <div class="item-card" {% if building.isUpgrading %}style="background-color: #e6f3ff; border: 2px dashed #3498db;"{% endif %}>
+                                {% if building.weaponLevel %}
+                                    <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
 /{{building.level}}-{{building.weaponLevel}}.png" alt="{{building.name}}">
-                    {% else %}
-                    <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
+                                {% else %}
+                                    <img height="64" src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
 /{{building.level}}.png" alt="{{building.name}}">
-                    {% endif %}
-                    <div onclick="selectItem('build', this)" data-info='{{ building|tojson|safe }}' data-type="build">
-                        <p>{{building.name}}: {{building.level}}{% if building.weaponLevel %}-{{building.weaponLevel}}{% endif %} (ID: #{{building.id}})
-                        {% if building.isUpgrading and building.endTime %}
-                            <span class="upgrade-time" data-endtime="{{building.endTime}}"></span>
+                                {% endif %}
+                                <div onclick="selectItem('build', this)" data-info='{{ building|tojson|safe }}' data-type="build">
+                                    <p>
+                                        {{building.name}}: {{building.level}}{% if building.weaponLevel %}-{{building.weaponLevel}}{% endif %} (ID: #{{building.id}})
+                                        {% if building.isUpgrading and building.endTime %}
+                                            <span class="upgrade-time" data-endtime="{{building.endTime}}"></span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
                         {% endif %}
-                        </p>
-                    </div>
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
-        </div>
+                    {% endfor %}
 
-        {# Troops Section #}
-        <div class="card">
-            <h2>Troops</h2>
-            <p>Right click to add upgrade note</p>
-            <div class="flex-grid">
-                {% for troop in player_data.player.troops %}
-                {% if (requested_village == 'home' and troop.village == 'home' and troop.name in ["Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"]) or
-                      (requested_village == 'builder' and troop.village == 'builder' and troop.name in ["Raged Barbarian", "Sneaky Archer","Boxer Giant", "Beta Minion", "Bomber", "Baby Dragon","Cannon Cart","Night Witch","Drop Ship", "Power P.E.K.K.A","Hog Glider","Electrofire Wizard"]) %}
-                <div class="item-card troop-card">
-                    <img height="64" src="/static/images/{{troop.village}}/troops/{{troop.name|lower|replace(" ","_")|replace(".","")}}
+    
+                    {# Show new buildings under construction #}
+                    {% for item in buildings_data.currentlyUpgrading.building %}
+                        {% if item.village == requested_village and item.new %}
+                            <div class="item-card" style="background-color: #e6ffe6; border: 2px dashed #4CAF50;">
+                                <img height="64" src="/static/images/{{item.village}}/buildings/{{item.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
+/1.png" alt="{{item.name}}">
+                                <div data-info='{{ item|tojson|safe }}' data-type="build">
+                                    <p>
+                                        {{item.name}}: Under Construction (ID: #{{item.id}})
+                                        {% if item.endTime %}
+                                            <span class="upgrade-time" data-endtime="{{item.endTime}}"></span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# Troops Section #}
+            <div class="card">
+                <h2>Troops</h2>
+                <p>Right click to add upgrade note</p>
+                <div class="flex-grid">
+                    {% for troop in player_data.player.troops %}
+                        {% if (requested_village == 'home' and troop.village == 'home' and troop.name in [
+                            "Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", 
+                            "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", 
+                            "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", 
+                            "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", 
+                            "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", 
+                            "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"
+                        ]) or (requested_village == 'builder' and troop.village == 'builder' and troop.name in [
+                            "Raged Barbarian", "Sneaky Archer", "Boxer Giant", "Beta Minion", 
+                            "Bomber", "Baby Dragon", "Cannon Cart", "Night Witch", "Drop Ship", 
+                            "Power P.E.K.K.A", "Hog Glider", "Electrofire Wizard"
+                        ]) %}
+                            <div class="item-card troop-card" 
+                                {% if buildings_data.currentlyUpgrading.troop and buildings_data.currentlyUpgrading.troop[-1].name == troop.name %}
+                                    style="background-color: #e6f3ff; border: 2px dashed #3498db;"
+                                {% endif %}>
+                                <img height="64" src="/static/images/{{troop.village}}/troops/{{troop.name|lower|replace(" ","_")|replace(".","")}}
 /avatar.png" alt="{{troop.name}}">
-                    <div onclick="selectItem('troop','{{troop.name}}')" data-info='{{troop|tojson|safe}}' data-type="troop">
-                        <p>{{troop.name}}: {{troop.level}}</p>
-                    </div>
+                                <div onclick="selectItem('troop','{{troop.name}}')" data-info='{{troop|tojson|safe}}' data-type="troop">
+                                    <p>
+                                        {{troop.name}}: {{troop.level}}
+                                        {% if buildings_data.currentlyUpgrading.troop and buildings_data.currentlyUpgrading.troop[-1].name == troop.name %}
+                                            <span class="upgrade-time" data-endtime="{{buildings_data.currentlyUpgrading.troop[-1].endTime}}"></span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                 </div>
-                {% endif %}
+            </div>
+
+            {# Currently Upgrading Section #}
+            {% if buildings_data.currentlyUpgrading %}
+            <div class="card">
+                <h2>Currently Upgrading</h2>
+                {% for type in buildings_data.currentlyUpgrading %}
+                    {% for item in buildings_data.currentlyUpgrading[type] %}
+                        {% if item.village == requested_village %}
+                        <div class="upgrade-item">
+                            <p>
+                                {% if item.time is defined %}
+                                    {{ item.time|int|timeago }}: [{{ type }}] 
+                                {% else %}
+                                    No time available: [{{ type }}]
+                                {% endif %}
+                                
+                                {% if type == 'building' %}
+                                    {{ item.name }} is being upgraded to level {{ item.level }} 
+                                    <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}" data-name="{{item.name}}" data-level="{{item.level}}">(ID: #{{ item.id }})</span>
+                                {% elif type == 'troop' %}
+                                    {{ item.name }} is being upgraded to level {{ item.level }}
+                                    <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}"></span>
+                                {% elif type == 'hero' %}
+                                    {{ item.hero }} is being upgraded
+                                    <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}"></span>
+                                {% elif type == 'pet' %}
+                                    {{ item.pet }} is being upgraded
+                                    <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}"></span>
+                                {% endif %}
+                                <button onclick="showGemInput(this)" class="gem-input-btn">Set Gems</button>
+                                {% if item.endTime %}
+                                    <span class="upgrade-time" data-endtime="{{item.endTime}}"></span>
+                                {% endif %}
+                            </p>
+                            <div class="gem-input-container" style="display: none;">
+                                <input type="number" class="gem-input" placeholder="Enter gems to finish">
+                                <button onclick="calculateTimeFromGems(this)">Calculate</button>
+                                <button onclick="hideGemInput(this)">Cancel</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
             </div>
-        </div>
-
-        {# Currently Upgrading Section #}
-        {% if buildings_data.currentlyUpgrading %}
-        <div class="card">
-            <h2>Currently Upgrading</h2>
-            {% for type in buildings_data.currentlyUpgrading %}
-                {% for item in buildings_data.currentlyUpgrading[type] %}
-                    {% if item.village == requested_village %}
-                    <div class="upgrade-item">
-                        <p>
-                            {% if item.time is defined %}
-                                {{ item.time|int|timeago }}: [{{ type }}] 
-                            {% else %}
-                                No time available: [{{ type }}]
-                            {% endif %}
-                            
-                            {% if type == 'building' %}
-                                {{ item.name }} is being upgraded to level {{ item.level }} 
-                                <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}" data-name="{{item.name}}" data-level="{{item.level}}">(ID: #{{ item.id }})</span>
-                            {% elif type == 'troop' %}
-                                {{ item.name }} is being upgraded to level {{ item.level }}
-                                <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}"></span>
-                            {% elif type == 'hero' %}
-                                {{ item.hero }} is being upgraded
-                                <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}"></span>
-                            {% elif type == 'pet' %}
-                                {{ item.pet }} is being upgraded
-                                <span class="upgrade-id" data-id="{{ item.id }}" data-village="{{ item.village }}"></span>
-                            {% endif %}
-                            <button onclick="showGemInput(this)" class="gem-input-btn">Set Gems</button>
-                            <span class="time-remaining"></span>
-                        </p>
-                        <div class="gem-input-container" style="display: none;">
-                            <input type="number" class="gem-input" placeholder="Enter gems to finish">
-                            <button onclick="calculateTimeFromGems(this)">Calculate</button>
-                            <button onclick="hideGemInput(this)">Cancel</button>
-                        </div>
-                    </div>
-                    {% endif %}
-                {% endfor %}
-            {% endfor %}
-        </div>
 
         <script>
         // Constants and State Management
@@ -454,6 +504,23 @@
                 minTime
             ) - 1;
         }
+
+        // Building Search
+        // =============
+
+        document.getElementById('buildingSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const buildings = document.getElementById('buildingsGrid').getElementsByClassName('item-card');
+            
+            Array.from(buildings).forEach(building => {
+                const buildingName = building.textContent.toLowerCase();
+                if (buildingName.includes(searchTerm)) {
+                    building.style.display = 'flex';  // Keep flex display for layout
+                } else {
+                    building.style.display = 'none';
+                }
+            });
+        });
 
         // Resource Management
         // =================
@@ -637,51 +704,67 @@
         // ===================
 
         function addNewBuilding() {
-            const modal = document.getElementById('newBuildingModal');
-            modal.style.display = 'block';
-            
-            const buildingSelect = document.getElementById('buildingName');
-            buildingSelect.innerHTML = '';
-            
-            // Use the current village's buildings
-            buildingsByVillage['{{requested_village}}'].forEach(building => {
-                const option = document.createElement('option');
-                option.value = building;
-                option.textContent = building;
-                buildingSelect.appendChild(option);
-            });
-            
-            const form = document.getElementById('newBuildingForm');
-            form.onsubmit = (e) => {
-                e.preventDefault();
-                
-                const name = buildingSelect.value;
-                const level = parseInt(document.getElementById('buildingLevel').value);
+    const modal = document.getElementById('newBuildingModal');
+    modal.style.display = 'block';
+    
+    const buildingSelect = document.getElementById('buildingName');
+    buildingSelect.innerHTML = '';
+    
+    // Use the current village's buildings
+    buildingsByVillage['{{requested_village}}'].forEach(building => {
+        const option = document.createElement('option');
+        option.value = building;
+        option.textContent = building;
+        buildingSelect.appendChild(option);
+    });
+    
+    const form = document.getElementById('newBuildingForm');
+    form.onsubmit = (e) => {
+        e.preventDefault();
+        
+        const name = buildingSelect.value;
+        const level = parseInt(document.getElementById('buildingLevel').value);
 
-                const existingIds = [
-                    ...current_buildings.filter(b => b.village === '{{requested_village}}').map(b => b.id),
-                    ...state.note.notes.filter(n => n.id && n.village === '{{requested_village}}').map(n => n.id)
-                ];
-                const id = existingIds.length ? Math.max(...existingIds) + 1 : 1;
+        const existingIds = [
+            ...current_buildings.filter(b => b.village === '{{requested_village}}').map(b => b.id),
+            ...state.note.notes.filter(n => n.id && n.village === '{{requested_village}}').map(n => n.id)
+        ];
+        const id = existingIds.length ? Math.max(...existingIds) + 1 : 1;
 
-                const noteText = {
-                    village: '{{requested_village}}',
-                    type: "building",
-                    name: name,
-                    id: id,
-                    level: level,
-                    new: true
-                };
+        // Create the note
+        const noteText = {
+            village: '{{requested_village}}',
+            type: "building",
+            name: name,
+            id: id,
+            level: level,
+            new: true
+        };
 
-                if (!state.note.notes) {
-                    state.note.notes = [];
-                }
-                state.note.notes.push(noteText);
-                
-                updateNote();
-                closeNewBuildingModal();
-            };
+        // Add to notes array
+        if (!state.note.notes) {
+            state.note.notes = [];
         }
+        state.note.notes.push(noteText);
+        
+        // Add to UI and show the notes section
+        const newBuildingsList = document.getElementById('newBuildingNotesList');
+        const notesContainer = document.getElementById('newBuildingNotes');
+        if (newBuildingsList) {
+            notesContainer.style.display = 'block';  // Show the container
+            const buildingDiv = document.createElement('div');
+            buildingDiv.className = 'new-building-note';
+            buildingDiv.innerHTML = `
+                <p>${name} (Level ${level}) - ID #${id}</p>
+                <button onclick="deleteNewBuildingNote('building', '${name}', ${id}, this)" class="delete-btn">❌</button>
+            `;
+            newBuildingsList.appendChild(buildingDiv);
+        }
+        
+        updateNote();
+        closeNewBuildingModal();
+    };
+}
 
         function closeNewBuildingModal() {
             const modal = document.getElementById('newBuildingModal');
@@ -689,19 +772,29 @@
             document.getElementById('newBuildingForm').reset();
         }
 
-        function deleteNewBuildingNote(type, name, id) {
-            const noteIndex = state.note.notes.findIndex(note => {
-                if (typeof note === 'string') {
-                    return note.includes(`id #${id}`);
-                }
-                return note.type === type && note.name === name && note.id === id;
-            });
-            
-            if (noteIndex !== -1) {
-                state.note.notes.splice(noteIndex, 1);
-                updateNote();
-            }
+        function deleteNewBuildingNote(type, name, id, buttonElement) {
+    const noteIndex = state.note.notes.findIndex(note => {
+        if (typeof note === 'string') {
+            return note.includes(`id #${id}`);
         }
+        return note.type === type && note.name === name && note.id === id;
+    });
+    
+    if (noteIndex !== -1) {
+        state.note.notes.splice(noteIndex, 1);
+        // Remove the parent div from UI
+        buttonElement.closest('.new-building-note').remove();
+        
+        // Hide container if empty
+        const notesList = document.getElementById('newBuildingNotesList');
+        const notesContainer = document.getElementById('newBuildingNotes');
+        if (!notesList.children.length) {
+            notesContainer.style.display = 'none';
+        }
+        
+        updateNote();
+    }
+}
 
         function selectItem(type, item) {
             const info = JSON.parse(item.dataset.info);
@@ -898,100 +991,99 @@
         </script>
 
         <style>
-        .upgrade-item {
-            margin-bottom: 10px;
-        }
+            .upgrade-item {
+                margin-bottom: 10px;
+            }
 
-        .gem-input-container {
-            margin-top: 5px;
-            margin-left: 20px;
-        }
+            .gem-input-container {
+                margin-top: 5px;
+                margin-left: 20px;
+            }
 
-        .gem-input {
-            width: 100px;
-            padding: 4px;
-            margin-right: 5px;
-        }
+            .gem-input {
+                width: 100px;
+                padding: 4px;
+                margin-right: 5px;
+            }
 
-        .time-remaining {
-            color: #666;
-            font-style: italic;
-        }
+            .time-remaining {
+                color: #666;
+                font-style: italic;
+            }
 
-        .gem-input-btn {
-            margin-left: 5px;
-            padding: 2px 8px;
-            font-size: 0.9em;
-        }
+            .gem-input-btn {
+                margin-left: 5px;
+                padding: 2px 8px;
+                font-size: 0.9em;
+            }
         </style>
         {% endif %}
 
         {# Recent Upgrades Section #}
-        <div class="card">
-            <h2>Recent Upgrade Logs</h2>
-            {% for log in buildings_data.logs.upgrades[:10] %}
-                {% if log.village == requested_village %}
-                <div class="flex-grid">
-                    <img height="64" src="/static/images/{{log.village}}/buildings/{{log.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
+            <div class="card">
+                <h2>Recent Upgrade Logs</h2>
+                {% for log in buildings_data.logs.upgrades[:10] %}
+                    {% if log.village == requested_village %}
+                        <div class="flex-grid">
+                            <img height="64" src="/static/images/{{log.village}}/buildings/{{log.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
 /{{log.level}}.png" alt="{{log.name}}">
-                    <p>{{log.time|timeago}}: {{log.name}} was upgraded to level {{log.level}}</p>
-                </div>
-                {% endif %}
-            {% endfor %}
+                            <p>{{log.time|timeago}}: {{log.name}} (ID #{{log.id}}) was upgraded to level {{log.level}}</p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {# Graphs Section #}
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <div class="graphs">    
+                {% for metric, data in history_graphs.items() %}
+                    {{ create_chart(
+                        chart_id=metric.split(".")[-1] + "Chart",
+                        title=metric,
+                        data=data,
+                        color=loop.cycle(['rgb(75, 192, 192)', 'rgb(255, 99, 132)', 'rgb(255, 205, 86)', 'rgb(54, 162, 235)'])
+                    ) }}
+                {% endfor %}
+            </div>
         </div>
 
-        {# Graphs Section #}
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <div class="graphs">    
-            {% for metric, data in history_graphs.items() %}
-                {{ create_chart(
-                    chart_id=metric.split(".")[-1] + "Chart",
-                    title=metric,
-                    data=data,
-                    color=loop.cycle(['rgb(75, 192, 192)', 'rgb(255, 99, 132)', 'rgb(255, 205, 86)', 'rgb(54, 162, 235)'])
-                ) }}
-            {% endfor %}
+        {# Sidebar #}
+        <div class="sidebar">
+            <h2>Note Builder</h2>
+            <p>This must be manually added to the historical file until authentication is implemented.</p>
+
+            <div class="resource-inputs">
+                <input type="number" id="gold-input" placeholder="Gold" class="resource-input"
+                       onchange="updateResource('gold', '{{requested_village}}', this.value)">
+                <input type="number" id="elixir-input" placeholder="Elixir" class="resource-input"
+                       onchange="updateResource('elixir', '{{requested_village}}', this.value)">
+                <input type="number" id="dark-elixir-input" placeholder="Dark Elixir" class="resource-input"
+                       onchange="updateResource('dark_elixir', '{{requested_village}}', this.value)">
+                <input type="number" id="gems-input" placeholder="Gems" class="resource-input"
+                       onchange="updateResource('gems', null, this.value)">
+            </div>
+
+            <textarea readonly id="note-builder" style="width: 100%; height: 500px;" 
+                      placeholder="Start interaction and note will generate here!"></textarea>
         </div>
     </div>
 
-    {# Sidebar #}
-    <div class="sidebar">
-        <h2>Note Builder</h2>
-        <p>This must be manually added to the historical file until authentication is implemented.</p>
-
-        <div class="resource-inputs">
-            <input type="number" id="gold-input" placeholder="Gold" class="resource-input"
-                   onchange="updateResource('gold', '{{requested_village}}', this.value)">
-            <input type="number" id="elixir-input" placeholder="Elixir" class="resource-input"
-                   onchange="updateResource('elixir', '{{requested_village}}', this.value)">
-            <input type="number" id="dark-elixir-input" placeholder="Dark Elixir" class="resource-input"
-                   onchange="updateResource('dark_elixir', '{{requested_village}}', this.value)">
-            <input type="number" id="gems-input" placeholder="Gems" class="resource-input"
-                   onchange="updateResource('gems', null, this.value)">
-        </div>
-
-        <textarea readonly id="note-builder" style="width: 100%; height: 500px;" 
-                  placeholder="Start interaction and note will generate here!"></textarea>
+    {# Modal #}
+    <div id="newBuildingModal" class="modal">
+        <h3>Add New Building</h3>
+        <form id="newBuildingForm">
+            <div>
+                <label for="buildingName">Building:</label>
+                <select id="buildingName" required></select>
+            </div>
+            <div>
+                <label for="buildingLevel">Level:</label>
+                <input type="number" id="buildingLevel" min="1" required>
+            </div>
+            <button type="submit">Add Building</button>
+            <button type="button" onclick="closeNewBuildingModal()">Cancel</button>
+        </form>
     </div>
-</div>
-
-{# Modal #}
-<div id="newBuildingModal" class="modal">
-    <h3>Add New Building</h3>
-    <form id="newBuildingForm">
-        <div>
-            <label for="buildingName">Building:</label>
-            <select id="buildingName" required></select>
-        </div>
-        <div>
-            <label for="buildingLevel">Level:</label>
-            <input type="number" id="buildingLevel" min="1" required>
-        </div>
-        <button type="submit">Add Building</button>
-        <button type="button" onclick="closeNewBuildingModal()">Cancel</button>
-    </form>
-</div>
-
 {% endblock %}
 
 {% block footer %}

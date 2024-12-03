@@ -67,7 +67,7 @@ python update_players.py
 python download_images.py
 ```
 
-7. In another window, run the web server.
+7. In that other window, run the web server.
 
 ### Running the Web Server
 

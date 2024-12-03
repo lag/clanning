@@ -618,6 +618,19 @@ async def player_page(player: str, request: Request, village: str = 'home') -> s
 
     player_data['heroesFormatted'] = heroes
 
+    if 'currentlyUpgrading' in buildings_data:
+        # For troops, check if any have completed based on troop levels
+        if 'troop' in buildings_data['currentlyUpgrading']:
+            # Create a new list excluding completed upgrades
+            buildings_data['currentlyUpgrading']['troop'] = [
+                upgrade for upgrade in buildings_data['currentlyUpgrading']['troop']
+                if any(
+                    troop['name'] == upgrade['name'] and 
+                    troop['level'] < upgrade['level']
+                    for troop in player_data['player']['troops']
+                )
+            ]
+
     return templates.TemplateResponse(
         "player.html", 
         {
