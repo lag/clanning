@@ -2,12 +2,129 @@
 
 {% block title %}Players{% endblock %}
 
-{% block content %}
-    {% for player in players %}
-        <a href="/player/{{player}}">{{player}}</a>
-    {% endfor %}
+{% block head %}
+    <style>
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .player-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            gap: 20px;
+        }
+
+        .player-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .player-image {
+            width: 80px;
+            height: 80px;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .player-tag {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: bold;
+        }
+
+        .player-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .player-link:hover {
+            text-decoration: none;
+        }
+
+        .section-title {
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+    </style>
 {% endblock %}
 
-{% block footer %}
-    {{ super() }}
+{% block content %}
+    <h1 class="section-title">Tracked Players</h1>
+    
+    <div class="players-grid">
+        {% for player in players %}
+            <a href="/player/{{player.tag}}" class="player-link">
+                <div class="player-card">
+                    <img src="/static/images/home/buildings/town_hall/{{player.townHallLevel}}{% if player.townHallWeaponLevel %}-{{player.townHallWeaponLevel}}{% endif %}.png" 
+                         alt="Town Hall {{player.townHallLevel}}" 
+                         class="player-image">
+                    
+                    <div class="player-info">
+                        <div class="player-name">{{ player.name }}</div>
+                        <div class="player-tag">#{{ player.tag }}</div>
+                        
+                        <div class="player-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">TH:</span>
+                                <span class="stat-value">{{ player.townHallLevel }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Level:</span>
+                                <span class="stat-value">{{ player.expLevel }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Trophies:</span>
+                                <span class="stat-value">{{ player.trophies }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">BH:</span>
+                                <span class="stat-value">{{ player.builderHallLevel }}</span>
+                            </div>
+                            <div class="stat-item" style="grid-column: 1 / -1">
+                                <span class="stat-label">Clan:</span>
+                                <span class="stat-value">{{ player.clan }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
 {% endblock %}
