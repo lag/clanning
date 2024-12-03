@@ -11,6 +11,7 @@ Things I need to fix/add, but aren't top priority:
     - Make all pulling of historical, current, and building data more efficient (do not do different calls and reads for each).
     - When a new player is added, give them all required buildings and troops for their town hall level (or hint at them to be added in bulk -- currently has to be done manually).
     - Add dark elixir storages.
+    - Add spells and heroes.
 - History
     - Add working diffs for clan information. (not done because my alt is not yet in a clan)
 - Codebase

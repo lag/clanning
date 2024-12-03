@@ -660,7 +660,65 @@
                 }
             </style>
 
-            {# Walls Section #}
+{# Builders Status Section #}
+<div class="card builders-status">
+    <div class="status-container">
+        <div class="status-item">
+            <h3>Builders</h3>
+            {% set builder_count = buildings_data.buildings|selectattr('village', 'equalto', requested_village)|selectattr('name', 'equalto', "Builder's Hut")|list|length %}
+            {% if requested_village == 'builder' %}
+                {% set builder_count = builder_count + 1 %}  {# Add Master Builder for builder base #}
+            {% elif requested_village == 'home' %}
+                {% set has_bob = buildings_data.buildings|selectattr('village', 'equalto', 'home')|selectattr('name', 'equalto', "B.O.B's Hut")|list|length > 0 %}
+                {% if has_bob %}
+                    {% set builder_count = builder_count + 1 %}  {# Add B.O.B for home village #}
+                {% endif %}
+            {% endif %}
+            {% set upgrading_count = buildings_data.buildings|selectattr('village', 'equalto', requested_village)|selectattr('isUpgrading', 'equalto', true)|list|length %}
+            {% set new_building_count = buildings_data.currentlyUpgrading.building|selectattr('village', 'equalto', requested_village)|selectattr('new', 'equalto', true)|list|length %}
+            {% set total_building_count = upgrading_count + new_building_count %}
+            
+            <div class="status-value">{{ total_building_count }} / {{ builder_count }}</div>
+        </div>
+        <div class="status-item">
+            <h3>Laboratory</h3>
+            {% set troop_upgrades = buildings_data.currentlyUpgrading.troop|selectLatestForVillage(requested_village) %}
+            {% set spell_upgrades = buildings_data.currentlyUpgrading.spell|selectLatestForVillage(requested_village) %}
+            <div class="status-value">{{ 1 if (troop_upgrades or spell_upgrades) else 0 }} / 1</div>
+        </div>
+    </div>
+</div>
+
+            <style>
+                .builders-status {
+                    margin-bottom: 20px;
+                }
+
+                .status-container {
+                    display: flex;
+                    gap: 40px;
+                    justify-content: center; /* Center the items horizontally */
+                }
+
+.status-item {
+    flex: 1;
+    text-align: center; /* Center the text within each item */
+}
+
+.status-item h3 {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+.status-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 8px; /* Add some space between the title and the number */
+}
+</style>
+{# Walls Section #}
             <div class="card">
                 <h2>Walls</h2>
                 <div class="walls-container">
@@ -852,60 +910,156 @@
                 }
             </style>
 
-            {# Builders Status Section #}
-            <div class="card builders-status">
-                <div class="status-container">
-                    <div class="status-item">
-                        <h3>Builders</h3>
-                        {% set builder_count = buildings_data.buildings|selectattr('village', 'equalto', requested_village)|selectattr('name', 'equalto', "Builder's Hut")|list|length %}
-                        {% if requested_village == 'builder' %}
-                            {% set builder_count = builder_count + 1 %}  {# Add Master Builder for builder base #}
-                        {% elif requested_village == 'home' %}
-                            {% set has_bob = buildings_data.buildings|selectattr('village', 'equalto', 'home')|selectattr('name', 'equalto', "B.O.B's Hut")|list|length > 0 %}
-                            {% if has_bob %}
-                                {% set builder_count = builder_count + 1 %}  {# Add B.O.B for home village #}
-                            {% endif %}
-                        {% endif %}
-                        {% set upgrading_count = buildings_data.buildings|selectattr('village', 'equalto', requested_village)|selectattr('isUpgrading', 'equalto', true)|list|length %}
-                        <div class="status-value">{{ upgrading_count }} / {{ builder_count }}</div>
+{% if player_data.player.heroes %}
+<div class="card">
+    <h2>Heroes</h2>
+    <div class="heroes-grid">
+        {% set hero_order = ['Barbarian King', 'Archer Queen', 'Minion Prince', 'Grand Warden', 'Royal Champion'] %}
+        {% for hero_name in hero_order %}
+            {% for hero in player_data.player.heroes %}
+                {% if hero.village == 'home' and hero.name == hero_name %}
+                <div class="hero-card">
+                    <div class="hero-info">
+                        <img class="hero-avatar" 
+                             src="/static/images/{{hero.village}}/heroes/{{hero.name.lower().replace(' ','_').replace('.','')}}/avatar.png" 
+                             alt="{{hero.name}}">
+                        <div class="hero-details">
+                            <h3 class="hero-name">{{hero.name}}</h3>
+                            <span class="hero-level">Level {{hero.level}}</span>
+                        </div>
                     </div>
-                    <div class="status-item">
-                        <h3>Laboratory</h3>
-                        {% set troop_upgrades = buildings_data.currentlyUpgrading.troop|selectLatestForVillage(requested_village) %}
-                        <div class="status-value">{{ 1 if troop_upgrades else 0 }} / 1</div>
+                    <div class="equipment-grid">
+                        {% for equipment in player_data.heroesFormatted[hero.village][hero.name]['equipment'] %}
+                        <div class="equipment-card {% if equipment.selected %}selected{% endif %}">
+                            <img class="equipment-icon" 
+                                 src="/static/images/{{hero.village}}/hero_equipment/{{equipment.name.lower().replace(' ','_').replace('.','')}}.png" 
+                                 alt="{{equipment.name}}">
+                            <div class="equipment-details">
+                                <span class="equipment-name">{{equipment.name}}</span>
+                                <span class="equipment-level">Level {{equipment.level}}/{{equipment.maxLevel}}</span>
+                                {% if equipment.selected %}
+                                    <span class="selected-icon">✔️</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-            </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
 
-            <style>
-                .builders-status {
-                    margin-bottom: 20px;
-                }
+<style>
+    .heroes-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 10px 0;
+        justify-content: center; /* Center align wrapped items */
+    }
 
-                .status-container {
-                    display: flex;
-                    gap: 40px;
-                    justify-content: center; /* Center the items horizontally */
-                }
+    .hero-card {
+        flex: 0 1 280px; /* Adjusted width to 280px */
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        box-sizing: border-box; /* Ensure padding/border are included in width */
+    }
 
-.status-item {
-    flex: 1;
-    text-align: center; /* Center the text within each item */
-}
+    .hero-info {
+        display: flex;
+        align-items: center;
+        gap: 12px; /* Reduced gap */
+        padding: 12px; /* Reduced padding */
+        border-bottom: 1px solid var(--border-color);
+    }
 
-.status-item h3 {
-    margin: 0 0 8px 0;
-    font-size: 1rem;
-    color: #666;
-}
+    .hero-avatar {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+    }
 
-.status-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-color);
-    margin-top: 8px; /* Add some space between the title and the number */
-}
+    .hero-details {
+        flex: 1;
+    }
+
+    .hero-name {
+        margin: 0;
+        font-size: 1.1rem; /* Slightly smaller font size */
+        color: var(--primary-color);
+    }
+
+    .hero-level {
+        font-size: 0.85rem; /* Slightly smaller font size */
+        color: #666;
+    }
+
+    .equipment-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 6px; /* Reduced gap */
+        padding: 12px; /* Reduced padding */
+    }
+
+    .equipment-card {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Reduced gap */
+        padding: 6px; /* Reduced padding */
+        background: var(--background-color);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        position: relative;
+    }
+
+    .equipment-card.selected {
+        background: #f0f7ff;
+        border-color: #3498db;
+    }
+
+    .equipment-icon {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+    }
+
+    .equipment-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .equipment-name {
+        font-size: 0.85rem; /* Slightly smaller font size */
+        font-weight: 500;
+        color: var(--text-color);
+    }
+
+    .equipment-level {
+        font-size: 0.75rem; /* Slightly smaller font size */
+        color: #666;
+    }
+
+    .selected-icon {
+        position: absolute;
+        right: 8px; /* Adjusted position */
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero-card {
+            min-width: 100%;
+        }
+    }
 </style>
+{% endif %}
 
 {# Buildings Section #}
 <div class="card">
@@ -919,8 +1073,6 @@
             <button onclick="addNewBuilding()" class="add-building-btn">Add New Building</button>
         </div>
     </div>
-    
-    <p class="building-instructions">Left click to mark as upgraded, right click to add upgrade note</p>
 
     <div id="newBuildingNotes" class="new-buildings-notes" style="display: none;">
         <h3>New Buildings</h3>
@@ -931,47 +1083,57 @@
         {% for building in buildings_data.buildings %}
             {% if building.village == requested_village %}
             <div class="building-card {% if building.isUpgrading %}upgrading{% endif %}" 
-                onclick="selectItem('build', this)" 
-                data-info='{{ building|tojson|safe }}' 
-                data-type="build">
-                <img src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/{{building.level}}{% if building.weaponLevel %}-{{building.weaponLevel}}{% endif %}.png" 
-                    alt="{{building.name}}"
-                    class="building-image">
-                <div class="building-info">
-                    <div class="building-name">
-                        <span class="building-title">{{building.name}}</span>
-                        <span class="building-level">Level {{building.level}} {% if building.weaponLevel %}[{{building.weaponLevel}}]{% endif %}</span>
-                        <span class="building-id">#{{building.id}}</span>
-                    </div>
-                    {% if building.isUpgrading and building.endTime %}
-                        <span class="upgrade-time" data-endtime="{{building.endTime}}"></span>
-                        <button class="gem-input-btn" onclick="openGemModal(event, '{{building.name}}', {{building.level}}, 'building', {{building.id}})">⏰</button>
-                    {% endif %}
-                </div>
-            </div>
+     onclick="selectItem('build', this)" 
+     data-info='{{ building|tojson|safe }}' 
+     data-type="build">
+    <img src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/{{building.level}}{% if building.weaponLevel %}-{{building.weaponLevel}}{% endif %}.png" 
+         alt="{{building.name}}"
+         class="building-image">
+    <div class="building-info">
+        <div class="building-name">
+            <span class="building-title">{{building.name}}</span>
+            <span class="building-level">L{{building.level}} {% if building.weaponLevel %}[{{building.weaponLevel}}]{% endif %}</span>
+        </div>
+        {% if building.isUpgrading %}
+            <span class="upgrade-time" data-endtime="{{building.endTime}}"></span>
+        {% endif %}
+    </div>
+    <div class="building-id">
+        #{{building.id}}
+        {% if building.isUpgrading %}
+            <button class="gem-input-btn" onclick="openGemModal(event, '{{building.name}}', {{building.level}}, 'building', {{building.id}})">⏰</button>
+        {% endif %}
+    </div>
+</div>
             {% endif %}
         {% endfor %}
 
         {# Show new buildings under construction #}
         {% for item in buildings_data.currentlyUpgrading.building %}
-            {% if item.village == requested_village and item.new %}
-                <div class="building-card new-building">
-                    <img src="/static/images/{{item.village}}/buildings/{{item.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
+        {% if item.village == requested_village and item.new %}
+        <div class="building-card new-building"
+             onclick="selectItem('build', this)"
+             data-info='{{ item|tojson|safe }}'
+             data-type="build">
+            <img src="/static/images/{{item.village}}/buildings/{{item.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".","")}}
 /1.png" 
-                         alt="{{item.name}}"
-                         class="building-image">
-                    <div class="building-info" data-info='{{ item|tojson|safe }}' data-type="build">
-                        <div class="building-name">
-                            {{item.name}}:
-                            <span class="building-id">#{{item.id}}</span>
-                            (New)
-                        </div>
-                        {% if item.endTime %}
-                            <span class="upgrade-time" data-endtime="{{item.endTime}}"></span>
-                        {% endif %}
-                    </div>
+                 alt="{{item.name}}"
+                 class="building-image">
+            <div class="building-info">
+                <div class="building-name">
+                    <span class="building-title">{{item.name}}</span>
+                    <span class="building-level">New</span>
                 </div>
-            {% endif %}
+                {% if item.endTime %}
+                    <span class="upgrade-time" data-endtime="{{item.endTime}}"></span>
+                {% endif %}
+            </div>
+            <div class="building-id">
+                #{{item.id}}
+                <button class="gem-input-btn" onclick="openGemModal(event, '{{item.name}}', 1, 'building', {{item.id}})">⏰</button>
+            </div>
+        </div>
+    {% endif %}
         {% endfor %}
     </div>
 </div>
@@ -1026,8 +1188,8 @@
     -ms-user-select: none;      /* IE/Edge */
 }
 
-    .building-card {
-        position: relative;  /* Ensure relative positioning for absolute children */
+.building-card {
+        position: relative;
         display: flex;
         align-items: center;
         padding: 8px;
@@ -1035,6 +1197,8 @@
         border: 1px solid var(--border-color);
         border-radius: 4px;
         gap: 8px;
+        height: 64px;
+        box-sizing: border-box;
     }
 
     .building-card.upgrading {
@@ -1056,6 +1220,22 @@
     .building-info {
         flex: 1;
         min-width: 0;
+        display: flex;         /* Add this */
+        flex-direction: column; /* Add this */
+        gap: 4px;             /* Add this */
+    }
+
+    .building-title-level {   /* New container */
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .building-metadata {      /* New container */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
     }
 
     .upgrade-time {
@@ -1095,6 +1275,7 @@
         display: flex;
         gap: 6px;
         align-items: center;
+        justify-content: space-between;
     }
 
     .building-title {
@@ -1111,10 +1292,14 @@
     }
 
     .building-id {
-        color: #666;
-        font-size: 0.8rem;
-        margin-left: auto;
-    }
+    color: #666;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column; /* Stack vertically */
+    align-items: center; /* Center items horizontally */
+    gap: 2px; /* Reduce gap for vertical stacking */
+    line-height: 1;
+}
 
     .new-buildings-notes {
         background: #f9f9f9;
@@ -1187,46 +1372,108 @@
 <div class="card">
     <div class="troops-header">
         <h2>Troops</h2>
-        <p class="troop-instructions">Right click to add upgrade note</p>
     </div>
     
     <div class="troops-grid">
         {% for troop in player_data.player.troops %}
-            {% if (requested_village == 'home' and troop.village == 'home' and troop.name in [
-                "Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", 
-                "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", 
-                "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", 
-                "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", 
-                "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", 
-                "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"
-            ]) or (requested_village == 'builder' and troop.village == 'builder' and troop.name in [
-                "Raged Barbarian", "Sneaky Archer", "Boxer Giant", "Beta Minion", 
-                "Bomber", "Baby Dragon", "Cannon Cart", "Night Witch", "Drop Ship", 
-                "Power P.E.K.K.A", "Hog Glider", "Electrofire Wizard"
-            ]) %}
-            {% set latestTroopUpgrade = buildings_data.currentlyUpgrading.troop|selectLatestForVillage(troop.village) %}
-            <div class="troop-card {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}upgrading{% endif %}" 
-                onclick="selectItem('troop', this)" 
-                data-info='{{troop|tojson|safe}}' 
-                data-type="troop">
-                <img src="/static/images/{{troop.village}}/troops/{{troop.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/avatar.png" 
-                alt="{{troop.name}}"
-                class="troop-image">
-                <div class="troop-info">
+    <!-- Debug full troop data: {{ troop|tojson }} -->
+    {% if (requested_village == 'home' and troop.village == 'home' and troop.name in [
+        "Barbarian", "Archer", "Goblin", "Giant", "Wall Breaker", "Balloon", 
+        "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", 
+        "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", 
+        "Miner", "Wall Wrecker", "Battle Blimp", "Yeti", "Ice Golem", 
+        "Electro Dragon", "Stone Slammer", "Dragon Rider", "Siege Barracks", 
+        "Headhunter", "Log Launcher", "Apprentice Warden", "Druid"
+    ]) or (requested_village == 'builder' and troop.village == 'builder' and troop.name in [
+        "Raged Barbarian", "Sneaky Archer", "Boxer Giant", "Beta Minion", 
+        "Bomber", "Baby Dragon", "Cannon Cart", "Night Witch", "Drop Ship", 
+        "Power P.E.K.K.A", "Hog Glider", "Electrofire Wizard"
+    ]) %}
+        <!-- Debug village match: {{ requested_village }} == {{ troop.village }} -->
+        {% set latestTroopUpgrade = buildings_data.currentlyUpgrading.troop|selectLatestForVillage(troop.village) %}
+        <!-- Debug upgrade data: {{ latestTroopUpgrade|tojson }} -->
+        <!-- Debug condition: {{ latestTroopUpgrade and latestTroopUpgrade.name == troop.name }} -->
+        
+        <div class="troop-card {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}upgrading{% endif %}" 
+             onclick="selectItem('troop', this)" 
+             data-info='{{troop|tojson|safe}}' 
+             data-type="troop">
+            <img src="/static/images/{{troop.village}}/troops/{{troop.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/avatar.png" 
+                 alt="{{troop.name}}"
+                 class="troop-image">
+                 <div class="troop-info">
                     <div class="troop-name">
                         <span class="troop-title">{{troop.name}}</span>
                         <span class="troop-level">Level {{troop.level}}</span>
                     </div>
                     {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}
-                        <span class="upgrade-time" data-endtime="{{latestTroopUpgrade.endTime}}"></span>
-                        <button class="gem-input-btn" onclick="openGemModal(event, '{{troop.name}}', {{troop.level}}, 'troop')">⏰</button>
+                        <!-- Debug: Creating upgrade-time span -->
+                        <span class="upgrade-time" data-endtime="{{latestTroopUpgrade.endTime}}"><!-- Initial content --></span>
                     {% endif %}
                 </div>
+            <div class="troop-id">
+                {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}
+                    <button class="gem-input-btn" onclick="openGemModal(event, '{{troop.name}}', {{troop.level}}, 'troop')">⏰</button>
+                {% endif %}
             </div>
-            {% endif %}
-        {% endfor %}
+        </div>
+    {% endif %}
+{% endfor %}
     </div>
 </div>
+
+{# Spells Section #}
+{% if player_data.player.spells and player_data.player.spells|length > 0 %}
+    {% set village_spells = [] %}
+    {% for spell in player_data.player.spells %}
+        {% if spell.village == requested_village %}
+            {% set _ = village_spells.append(spell) %}
+        {% endif %}
+    {% endfor %}
+    
+    {% if village_spells|length > 0 %}
+        <div class="card">
+            <div class="troops-header">
+                <h2>Spells</h2>
+            </div>
+            
+            <div class="troops-grid">
+                {% for spell in player_data.player.spells %}
+                            {% if requested_village == 'home' and spell.village == 'home' and spell.name in [
+                                "Lightning Spell", "Healing Spell", "Rage Spell", "Jump Spell", 
+                                "Freeze Spell", "Clone Spell", "Invisibility Spell", "Recall Spell",
+                                "Poison Spell", "Earthquake Spell", "Haste Spell", "Skeleton Spell",
+                                "Bat Spell", "Overgrowth Spell"
+                            ] %}
+                            {% set latestSpellUpgrade = buildings_data.currentlyUpgrading.spell|selectLatestForVillage(spell.village) %}
+                            <div class="troop-card {% if latestSpellUpgrade and latestSpellUpgrade.name == spell.name %}upgrading{% endif %}" 
+                    onclick="selectItem('spell', this)" 
+                    data-info='{{spell|tojson|safe}}' 
+                    data-type="spell">
+                    <img src="/static/images/{{spell.village}}/spells/{{spell.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/avatar.png" 
+                        alt="{{spell.name}}"
+                        class="troop-image">
+                    <div class="troop-info">
+                        <div class="troop-name">
+                            <span class="troop-title">{{spell.name}}</span>
+                            <span class="troop-level">Level {{spell.level}}</span>
+                        </div>
+                        {% if latestSpellUpgrade and latestSpellUpgrade.name == spell.name %}
+                            <span class="upgrade-time" data-endtime="{{latestSpellUpgrade.endTime}}"></span>
+                        {% endif %}
+                    </div>
+                    <div class="troop-id">
+                        {% if latestSpellUpgrade and latestSpellUpgrade.name == spell.name %}
+                            <button class="gem-input-btn" onclick="openGemModal(event, '{{spell.name}}', {{spell.level}}, 'spell')">⏰</button>
+                        {% endif %}
+                    </div>
+                </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
 
 <style>
     .troops-header {
@@ -1236,6 +1483,16 @@
         margin-bottom: 16px;
     }
 
+    .troop-id, .spell-id {
+        color: #666;
+        font-size: 0.8rem;
+        display: flex;
+        flex-direction: column; /* Stack vertically */
+        align-items: center; /* Center items horizontally */
+        gap: 2px; /* Reduce gap for vertical stacking */
+        line-height: 1;
+    }
+
     .troop-instructions {
         font-size: 0.9rem;
         color: #666;
@@ -1243,25 +1500,27 @@
     }
 
     .troops-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 12px;  /* Increased from 8px for better spacing */
-        padding: 8px;  /* Added padding around the grid */
-    }
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(256px, 1fr)); /* Reduced from 320px */
+    gap: 12px;
+    padding: 8px;
+}
 
-    .troop-card {
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 16px;  /* Increased padding */
-        background: white;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        cursor: pointer;
-        height: 84px;  /* Increased height to accommodate content */
-        box-sizing: border-box;
-    }
+.troop-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    gap: 8px;
+    height: 64px;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 256px; /* Adjusted to match grid */
+    max-width: none;
+}
 
     .troop-card.upgrading {
         background-color: #e6f3ff;  /* Same light blue as buildings */
@@ -1275,19 +1534,19 @@
     }
 
     .troop-info {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 6px;  /* Increased gap between elements */
-    }
+    flex: 1;
+    min-width: 0;
+    width: auto; /* Allow natural width */
+}
 
     .troop-name {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;  /* Increased gap between title and level */
-    }
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
     .troop-title {
         font-weight: 500;
@@ -1304,8 +1563,6 @@
     .upgrade-time {
         font-size: 0.8rem;
         color: #666;
-        line-height: 1.2;  /* Added line height */
-        margin-top: 2px;  /* Keep small top margin */
     }
 
     @media (max-width: 768px) {
@@ -1352,16 +1609,22 @@
             ],
             builder: [
                 // Main Buildings
-                'Builder Hall',
-                // Defenses 
+                'Builder Hall', 'B.O.B Control', 'Clock Tower',
+                
+                // Defenses
                 'Double Cannon', 'Hidden Tesla', 'Cannon', 'Archer Tower',
-                'Firecrackers', 'Crusher',
+                'Firecrackers', 'Crusher', 'Guard Post', 'Air Bombs', 'Giant Cannon',
+                'Multi Mortar', 'Roaster', 'Lava Launcher', 'Mega Tesla', 'X-Bow',
+                
                 // Resources
                 'Elixir Collector', 'Elixir Storage', 'Gold Mine', 'Gold Storage', 'Gem Mine',
-                // Army
-                'Barracks', 'Army Camp', 'Star Laboratory',
+                
+                // Army & Support
+                'Builder Barracks', 'Army Camp', 'Star Laboratory', 'Battle Machine',
+                'Battle Copter', 'Reinforcement Camp',
+                
                 // Traps
-                'Spring Trap', 'Push Trap', 'Mine'
+                'Spring Trap', 'Push Trap', 'Mine', 'Mega Mine'
             ]
         };
 
@@ -1745,27 +2008,57 @@
     }
 }
 
-        function selectItem(type, item) {
-            const info = JSON.parse(item.dataset.info);
-            if (type === 'build') {
-                const newBuilding = {
-                    village: info.village,
-                    id: info.id,
-                    name: info.name,
-                    level: info.level + 1
-                };
-                
-                const existingIndex = state.note.buildings.findIndex(b => b.id === newBuilding.id);
-                
-                if (existingIndex !== -1) {
-                    state.note.buildings.splice(existingIndex, 1);
-                } else {
-                    state.note.buildings.push(newBuilding);
-                }
-                
-                updateNote();
-            }
+function selectItem(type, item) {
+    const info = JSON.parse(item.dataset.info);
+    if (type === 'build') {
+        const newBuilding = {
+            village: info.village,
+            id: info.id,
+            name: info.name,
+            level: info.level + 1
+        };
+
+        if (info.new) {
+            newBuilding.level -= 1;
         }
+        
+        const existingIndex = state.note.buildings.findIndex(b => b.id === newBuilding.id);
+        
+        if (existingIndex !== -1) {
+            state.note.buildings.splice(existingIndex, 1);
+        } else {
+            state.note.buildings.push(newBuilding);
+        }
+        
+        updateNote();
+    } else if (type === 'troop' || type === 'spell') {
+        const noteText = {
+            village: info.village,
+            type: type,  // Will be either 'troop' or 'spell'
+            name: info.name,
+            level: info.level + 1
+        };
+
+        if (!state.note.notes) {
+            state.note.notes = [];
+        }
+
+        const existingIndex = state.note.notes.findIndex(note => 
+            note.type === type &&
+            note.village === info.village &&
+            note.name === info.name &&
+            note.level === info.level + 1
+        );
+
+        if (existingIndex !== -1) {
+            state.note.notes.splice(existingIndex, 1);
+        } else {
+            state.note.notes.push(noteText);
+        }
+        
+        updateNote();
+    }
+}
 
         // Note Management
         // ===============
@@ -1820,51 +2113,51 @@
         // =================
 
         document.addEventListener('contextmenu', (event) => {
-            const notableElement = event.target.closest('[data-info]');
-            
-            if (notableElement) {
-                event.preventDefault();
-                
-                const elementData = JSON.parse(notableElement.dataset.info);
-                const elementType = notableElement.dataset.type;
-                let noteText = null;
-                
-                if(elementType === 'build') {
-                    noteText = {
-                        village: elementData.village,
-                        type: "building",
-                        name: elementData.name,
-                        id: elementData.id,
-                        level: elementData.level + 1
-                    };
-                } else if(elementType === 'troop') {
-                    noteText = {
-                        village: elementData.village,
-                        type: "troop",
-                        name: elementData.name,
-                        level: elementData.level + 1
-                    };
-                }
+    const notableElement = event.target.closest('[data-info]');
+    
+    if (notableElement) {
+        event.preventDefault();
+        
+        const elementData = JSON.parse(notableElement.dataset.info);
+        const elementType = notableElement.dataset.type;
+        let noteText = null;
+        
+        if(elementType === 'build') {
+            noteText = {
+                village: elementData.village,
+                type: "building",
+                name: elementData.name,
+                id: elementData.id,
+                level: elementData.level + 1
+            };
+        } else if(elementType === 'troop' || elementType === 'spell') {
+            noteText = {
+                village: elementData.village,
+                type: elementType,
+                name: elementData.name,
+                level: elementData.level + 1
+            };
+        }
 
-                if(noteText) {
-                    const existingIndex = state.note.notes.findIndex(note => 
-                        note.type === noteText.type &&
-                        note.village === noteText.village &&
-                        note.name === noteText.name &&
-                        note.level === noteText.level &&
-                        (!noteText.id || note.id === noteText.id)
-                    );
-                    
-                    if (existingIndex !== -1) {
-                        state.note.notes.splice(existingIndex, 1);
-                    } else {
-                        state.note.notes.push(noteText);
-                    }
-                    
-                    updateNote();
-                }
+        if(noteText) {
+            const existingIndex = state.note.notes.findIndex(note => 
+                note.type === noteText.type &&
+                note.village === noteText.village &&
+                note.name === noteText.name &&
+                note.level === noteText.level &&
+                (!noteText.id || note.id === noteText.id)
+            );
+            
+            if (existingIndex !== -1) {
+                state.note.notes.splice(existingIndex, 1);
+            } else {
+                state.note.notes.push(noteText);
             }
-        });
+            
+            updateNote();
+        }
+    }
+});
 
         // Gem Calculation and Time Update
         // ===============================
@@ -1936,28 +2229,18 @@
         // ====================
 
         function updateUpgradeTimes() {
-            const timeElements = document.querySelectorAll('.upgrade-time');
-            const now = Math.floor(Date.now() / 1000);
+    const timeElements = document.querySelectorAll('.upgrade-time');
+    const now = Math.floor(Date.now() / 1000);
 
-            timeElements.forEach(el => {
-                const endTime = parseInt(el.dataset.endtime);
-                
-                if (endTime) {
-                    const remaining = endTime - now;
-                    if (remaining > 0) {
-                        el.textContent = ` (${formatTime(remaining)})`;
-                    } else {
-                        // If time is in the past, remove the upgrading status
-                        const buildingCard = el.closest('.item-card');
-                        if (buildingCard) {
-                            buildingCard.style.opacity = '1';
-                        }
-                        el.textContent = '';  // Remove the time display
-                        el.parentElement.removeChild(el);  // Remove the time element
-                    }
-                }
-            });
+    timeElements.forEach(el => {
+        const endTime = parseInt(el.dataset.endtime);
+        if (endTime) {
+            const remaining = endTime - now;
+            // Don't remove the span, just update the text
+            el.textContent = ` (${formatTime(Math.abs(remaining))})`;
         }
+    });
+}
 
         // Initialize
         // ==========
@@ -1994,11 +2277,15 @@
             }
 
             .gem-input-btn {
-                position: absolute;
-                right: 8px;  /* Adjust from edge of card */
-                top: 50%;
-                transform: translateY(-50%);
-                z-index: 1;  /* Ensure button is clickable */
+                background: none;
+                border: none;
+                padding: 0;
+                cursor: pointer;
+                font-size: 0.8rem;
+                color: #666;
+                display: flex;
+                align-items: center;
+                line-height: 1;
             }
         </style>
 
@@ -2430,6 +2717,16 @@ document.querySelectorAll('.troop-card').forEach(card => {
     card.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         selectItem('troop', this);
+    });
+});
+document.querySelectorAll('.spell-card').forEach(card => {
+    // Prevent image dragging
+    card.querySelector('img').addEventListener('dragstart', e => e.preventDefault());
+    
+    // Add right-click handler to entire card
+    card.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        selectItem('spell', this);
     });
 });
 </script>

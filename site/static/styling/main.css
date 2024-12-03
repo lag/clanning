@@ -132,3 +132,19 @@ footer a:hover {
         padding: 10px 0;
     }
 }
+
+/* Buildings use this grid */
+.buildings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    padding: 8px;
+}
+
+/* While troops/spells use this grid */
+.troops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    padding: 8px;
+}

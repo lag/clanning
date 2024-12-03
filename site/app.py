@@ -392,7 +392,8 @@ async def _get_player_buildings(player: str) -> tuple[dict, int]:
             'building': [],
             'hero': [],
             'pet': [],
-            'troop': []
+            'troop': [],
+            'spell': []
         }
 
         with open(f'../manual_history/{player}.json', 'rb') as f:
@@ -708,6 +709,16 @@ async def player_page(player: str, request: Request, village: str = 'home') -> s
                     troop['name'] == upgrade['name'] and 
                     troop['level'] < upgrade['level']
                     for troop in player_data['player']['troops']
+                )
+            ]
+        if 'spell' in buildings_data['currentlyUpgrading']:
+            # Create a new list excluding completed upgrades
+            buildings_data['currentlyUpgrading']['spell'] = [
+                upgrade for upgrade in buildings_data['currentlyUpgrading']['spell']
+                if any(
+                    spell['name'] == upgrade['name'] and 
+                    spell['level'] < upgrade['level']
+                    for spell in player_data['player']['spells']
                 )
             ]
 
