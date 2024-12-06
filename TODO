@@ -9,7 +9,6 @@ Things I need to fix/add, but aren't top priority:
     - If there is a pending new building being built it won't add in the new id creation for other new buildings.
     - Bulk import buildings with scan (WIP -- just need to increase accuracy of image recognition)
 - Player Page:
-    - Break this entire page up into components. It's getting too big.
     - Make all pulling of historical, current, and building data more efficient (do not do different calls and reads for each).
     - When a new player is added, give them all required buildings and troops for their town hall level (or hint at them to be added in bulk -- currently has to be done manually).
     - Add dark elixir storages.
@@ -17,3 +16,6 @@ Things I need to fix/add, but aren't top priority:
     - Add working diffs for clan information. (not done because my alt is not yet in a clan)
 - Codebase
     - Need to refactor a lot of it. Clean up all the template and messiness that has arisen. (I blame Claude.)
+        - Move all javascript into a single file based on page.
+        - Move all general css into a single file and unique page css into their own.
+        - Split up into components / deeper templates?

@@ -168,10 +168,10 @@
         border: 1px solid var(--border-color);
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        margin: 20px 0;
+        margin: 0; /* Remove margin since we're using grid gap */
         overflow: hidden;
-        width: calc(50% - 10px);  /* Half width minus gap */
-        display: inline-block;
+        width: 100%;
+        display: block;
     }
 
     .chart-header {
@@ -179,11 +179,11 @@
         border-bottom: 1px solid var(--border-color);
     }
 
-    .chart-header h3 {
-        margin: 0;
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--text-color);
+    .chart-container {
+        position: relative;
+        height: 300px;  /* Reduced from 400px */
+        width: 100%;
+        padding: 20px;
     }
 
     .chart-description {

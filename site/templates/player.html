@@ -116,22 +116,21 @@
         }
 
         .charts-container {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Two columns by default */
             gap: 20px;
-            justify-content: space-between;  /* Distribute space evenly */
             width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr; /* One column on mobile */
+            }
         }
 
         .chart-wrapper {
             width: calc(50% - 10px);  /* Half width minus half the gap */
             box-sizing: border-box;  /* Ensure padding/border are included in width */
-        }
-
-        @media (max-width: 768px) {
-            .chart-wrapper {
-                width: 100%;  /* Full width on smaller screens */
-            }
         }
 
         /* Resource Inputs */
@@ -1413,6 +1412,16 @@
 </style>
 
 {# Pets Section #}
+{% set pet_count = namespace(value=0) %}
+{% for troop in player_data.player.troops %}
+    {% if (requested_village == 'home' and troop.village == 'home' and troop.name in [
+        "L.A.S.S.I", "Electro Owl", "Mighty Yak", "Unicorn", "Frosty", "Diggy", "Poison Lizard", "Phoenix", "Spirit Fox", "Angry Jelly"
+    ]) %}
+        {% set pet_count.value = pet_count.value + 1 %}
+    {% endif %}
+{% endfor %}
+
+{% if pet_count.value > 0 %}
 <div class="card collapsible">
     <div class="troops-header">
         <h2>Pets</h2>
@@ -1420,42 +1429,38 @@
     
     <div class="troops-grid">
         {% for troop in player_data.player.troops %}
-    <!-- Debug full troop data: {{ troop|tojson }} -->
-    {% if (requested_village == 'home' and troop.village == 'home' and troop.name in [
-        "L.A.S.S.I", "Electro Owl", "Mighty Yak", "Unicorn", "Frosty", "Diggy", "Poison Lizard", "Phoenix", "Spirit Fox", "Angry Jelly"
-    ]) %}
-        <!-- Debug village match: {{ requested_village }} == {{ troop.village }} -->
-        {% set latestTroopUpgrade = buildings_data.currentlyUpgrading.troop|selectLatestForVillage(troop.village) %}
-        <!-- Debug upgrade data: {{ latestTroopUpgrade|tojson }} -->
-        <!-- Debug condition: {{ latestTroopUpgrade and latestTroopUpgrade.name == troop.name }} -->
-        
-        <div class="troop-card {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}upgrading{% endif %}" 
-             onclick="selectItem('troop', this)" 
-             data-info='{{troop|tojson|safe}}' 
-             data-type="troop">
-            <img src="/static/images/{{troop.village}}/troops/{{troop.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/avatar.png" 
-                 alt="{{troop.name}}"
-                 class="troop-image">
-                 <div class="troop-info">
-                    <div class="troop-name">
-                        <span class="troop-title">{{troop.name}}</span>
-                        <span class="troop-level">Level {{troop.level}}</span>
+            {% if (requested_village == 'home' and troop.village == 'home' and troop.name in [
+                "L.A.S.S.I", "Electro Owl", "Mighty Yak", "Unicorn", "Frosty", "Diggy", "Poison Lizard", "Phoenix", "Spirit Fox", "Angry Jelly"
+            ]) %}
+                <!-- Rest of your existing pet card code -->
+                {% set latestTroopUpgrade = buildings_data.currentlyUpgrading.troop|selectLatestForVillage(troop.village) %}
+                <div class="troop-card {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}upgrading{% endif %}" 
+                     onclick="selectItem('troop', this)" 
+                     data-info='{{troop|tojson|safe}}' 
+                     data-type="troop">
+                    <img src="/static/images/{{troop.village}}/troops/{{troop.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/avatar.png" 
+                         alt="{{troop.name}}"
+                         class="troop-image">
+                    <div class="troop-info">
+                        <div class="troop-name">
+                            <span class="troop-title">{{troop.name}}</span>
+                            <span class="troop-level">Level {{troop.level}}</span>
+                        </div>
+                        {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}
+                            <span class="upgrade-time" data-endtime="{{latestTroopUpgrade.endTime}}"></span>
+                        {% endif %}
                     </div>
-                    {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}
-                        <!-- Debug: Creating upgrade-time span -->
-                        <span class="upgrade-time" data-endtime="{{latestTroopUpgrade.endTime}}"><!-- Initial content --></span>
-                    {% endif %}
+                    <div class="troop-id">
+                        {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}
+                            <button class="gem-input-btn" onclick="openGemModal(event, '{{troop.name}}', {{troop.level}}, 'troop')">⏰</button>
+                        {% endif %}
+                    </div>
                 </div>
-            <div class="troop-id">
-                {% if latestTroopUpgrade and latestTroopUpgrade.name == troop.name %}
-                    <button class="gem-input-btn" onclick="openGemModal(event, '{{troop.name}}', {{troop.level}}, 'troop')">⏰</button>
-                {% endif %}
-            </div>
-        </div>
-    {% endif %}
-{% endfor %}
+            {% endif %}
+        {% endfor %}
     </div>
 </div>
+{% endif %}
 
 {# Troops Section #}
 <div class="card collapsible">
@@ -2781,7 +2786,7 @@ window.onclick = function(event) {
 }
 </script>
 <script>
-    document.querySelectorAll('.building-card').forEach(card => {
+    /*document.querySelectorAll('.building-card').forEach(card => {
         // Prevent image dragging
         card.querySelector('img').addEventListener('dragstart', e => e.preventDefault());
         
@@ -2791,7 +2796,7 @@ window.onclick = function(event) {
             // Your existing right-click handling code here
             selectItem('build', this);
         });
-    });
+    });*/
     document.querySelectorAll('.troop-card').forEach(card => {
         // Prevent image dragging
         card.querySelector('img').addEventListener('dragstart', e => e.preventDefault());
@@ -2815,7 +2820,6 @@ window.onclick = function(event) {
     document.addEventListener('DOMContentLoaded', function() {
         // Add collapse buttons to all cards
         document.querySelectorAll('.card.collapsible').forEach(card => {
-            console.log('Found collapsible card:', card); // Debug log
             
             // Add collapsible class
             card.classList.add('collapsible');
@@ -2841,8 +2845,6 @@ window.onclick = function(event) {
                 }
             };
             card.insertBefore(toggle, card.firstChild);
-            
-            console.log('Added toggle button'); // Debug log
         });
     });
     </script>
