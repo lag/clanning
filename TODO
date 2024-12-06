@@ -16,6 +16,4 @@ Things I need to fix/add, but aren't top priority:
     - Add working diffs for clan information. (not done because my alt is not yet in a clan)
 - Codebase
     - Need to refactor a lot of it. Clean up all the template and messiness that has arisen. (I blame Claude.)
-        - Move all javascript into a single file based on page.
-        - Move all general css into a single file and unique page css into their own.
         - Split up into components / deeper templates?
