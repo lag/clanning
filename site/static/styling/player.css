@@ -101,7 +101,7 @@
   border-radius: 4px;
 }
 
-.troop-card {
+.troop-card,.spell-card {
   width: 192px;
 }
 
@@ -735,7 +735,7 @@
 }
 
 .building-card,
-.troop-card {
+.troop-card,.spell-card {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -955,7 +955,7 @@
   padding: 8px;
 }
 
-.troop-card {
+.troop-card,.spell-card {
   position: relative;
   display: flex;
   align-items: center;
@@ -971,7 +971,7 @@
   max-width: none;
 }
 
-.troop-card.upgrading {
+.troop-card.upgrading,.spell-card.upgrading {
   background-color: var(--upgrading-background);
   border: 1px dashed var(--accent-blue);
 }
@@ -1267,4 +1267,131 @@
 
 #gemModal .submit-btn:hover {
   color: var(--text-color);
+}
+
+
+
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Modal container */
+#dataModal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+}
+
+/* Modal content */
+#dataModal .modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  max-width: 600px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal header */
+#dataModal h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Modal paragraphs */
+#dataModal p {
+  font-size: 16px;
+  margin: 5px 0;
+  color: #555;
+}
+
+/* Image styling */
+#dataModal .note-image {
+  display: block;
+  margin: 0 auto 10px;
+  border-radius: 4px;
+}
+
+/* Close button */
+#dataModal .close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+#dataModal .close:hover,
+#dataModal .close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.controls-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 1;
+}
+
+.building-sort {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  min-width: 150px;
+}
+
+/* Update existing buildings-controls class */
+.buildings-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .buildings-controls {
+    flex-direction: row;
+    align-items: center;
+  }
 }

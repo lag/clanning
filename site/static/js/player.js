@@ -203,6 +203,7 @@ const buildingsByVillage = {
     // Main Buildings
     "Builder Hall",
     "B.O.B Control",
+    "O.T.T.O's Outpost",
     "Clock Tower",
     // Defenses
     "Double Cannon",
@@ -634,8 +635,10 @@ function addNewBuilding() {
       // Create the new building note with updated styling
       buildingDiv.innerHTML = `
                 <img src="/static/images/${noteText.village}/buildings/${name
-        .toLowerCase()
-        .replace(/ /g, "_")}/1.png" 
+                  .toLowerCase()
+                  .replace(/ /g, "_")
+                  .replace(/'/g, "")
+                  .replace(/\./g, "")}/1.png" 
                      alt="${name}" 
                      class="note-image">
                 <div class="note-text">
@@ -685,7 +688,160 @@ function deleteNewBuildingNote(type, name, id, buttonElement) {
   }
 }
 
+function displayItem(type, item) {
+  let gameData = null;
+  let currentData = JSON.parse(item.dataset.info);
+  
+  if (type === "build") {
+    gameData = window.appData.gameData[currentData.village].buildings.find(
+      building => building.name === currentData.name
+    );
+  }
+  else if (type === "troop") {
+    gameData = window.appData.gameData[currentData.village].troops.find(
+      troop => troop.name === currentData.name
+    );
+  }
+
+  const modal = document.getElementById("dataModal");
+  const modalHeader = document.getElementById("dataModalHeader");
+  const modalBody = document.getElementById("dataModalBody");
+
+  if(gameData === null){
+    modalBody.innerHTML = "<p>No data found. Feature is will a WIP.</p>";
+    modalHeader.children[0].innerHTML = "Error!";
+    modal.style.display = "block";
+    return;
+  }
+
+  if(gameData === null){
+    modalBody.innerHTML = "<p>No data found. Feature is will a WIP.</p>";
+    modalHeader.children[0].innerHTML = "Error!";
+    modal.style.display = "block";
+    return;
+  }
+
+  // Clear previous content
+  modalBody.innerHTML = "";
+
+  let nextLevelData = null;
+  let currentLevelData = null;
+
+  // Find the indices for the stats we need
+  const levelIndex = gameData.level_keys.indexOf("level");
+  const hitpointsIndex = gameData.level_keys.indexOf("hitpoints");
+  const dpsIndex = gameData.level_keys.indexOf("dps");
+  const costIndex = gameData.level_keys.indexOf("cost");
+  const buildTimeIndex = gameData.level_keys.indexOf("build_time");
+  const townHallIndex = gameData.level_keys.indexOf("town_hall");
+  const storagesIndex = gameData.level_keys.indexOf("storages");
+  const generationIndex = gameData.level_keys.indexOf("generation");
+
+  // Clear previous content
+  modalBody.innerHTML = "";
+
+  // Find current and next level data
+  for (const levelData of gameData.levels) {
+    if (levelData[levelIndex] === currentData.level + 1) {
+      nextLevelData = {};
+      gameData.level_keys.forEach((key, index) => {
+        nextLevelData[key] = levelData[index];
+      });
+    }
+    else if (levelData[levelIndex] === currentData.level) {
+      currentLevelData = {};
+      gameData.level_keys.forEach((key, index) => {
+        currentLevelData[key] = levelData[index];
+      });
+    }
+  }
+
+
+  let targetString = 'Unknown';
+  if (gameData.attacks_air && gameData.attacks_ground) {
+    targetString = 'Ground & Air';
+  }
+  else if (gameData.attacks_air) {
+    targetString = 'Air';
+  }
+  else if (gameData.attacks_ground) {
+    targetString = 'Ground';
+  }
+
+  // Populate modal with data
+  let dataContent = "";
+  if(type === "build"){
+    dataContent = "";
+    dataContent += `<img height="100" src="/static/images/${currentData.village}/buildings/${currentData.name.toLowerCase().replace(/ /g, "_").replace("'", "")}/${nextLevelData.level}.png" alt="${currentData.name}" class="note-image">`;
+    dataContent += `<p>Building Type: ${gameData.building_class}</p>`;
+    dataContent += `<p>Level: ${currentData.level} -> ${nextLevelData.level}</p>`;
+    dataContent += `<p>Hitpoints: ${currentLevelData.hitpoints} -> ${nextLevelData.hitpoints} [+${nextLevelData.hitpoints - currentLevelData.hitpoints}]</p>`;
+    dataContent += `<p>Cost: ${nextLevelData.cost.toLocaleString()} ${gameData.build_resource}</p>`;
+    dataContent += `<p>Build Time: ${formatTime(nextLevelData.build_time)}</p>`;
+    dataContent += `<p>Town Hall Level: ${nextLevelData.town_hall}</p>`;
+    if(nextLevelData.dps !== null) {
+      dataContent += `<p>DPS: ${currentLevelData.dps} -> ${nextLevelData.dps} [+${nextLevelData.dps - currentLevelData.dps}]</p>`;
+      dataContent += `<p>Attack Range: ${gameData.attack_range}</p>`;
+      dataContent += `<p>Attack Speed: ${gameData.attack_speed}</p>`;
+      dataContent += `<p>Has Alternate Attack: ${gameData.has_alternate_attack || false}</p>`;
+      dataContent += `<p>Attacks: ${targetString}</p>`;
+    }
+    if (nextLevelData.storages) {
+      const storage = nextLevelData.storages;
+      dataContent += `<p>Stores: ${storage.gold || 0} Gold, ${storage.elixir || 0} Elixir, ${storage.dark_elixir || 0} Dark Elixir</p>`;
+    }
+    if (nextLevelData.generation) {
+      const gen = nextLevelData.generation;
+      dataContent += `<p>Production per hour: ${currentLevelData.generation.hundred_hours / 100} -> ${gen.hundred_hours / 100} [+${(gen.hundred_hours / 100) - (currentLevelData.generation.hundred_hours / 100)}]</p>`;
+      dataContent += `<p>Capacity: ${currentLevelData.generation.max} -> ${gen.max} [+${(gen.max) - (currentLevelData.generation.max)}]</p>`;
+    }
+    if(nextLevelData.housing_space) {
+      dataContent += `<p>Troop Capacity: ${nextLevelData.housing_space}</p>`;
+    }
+    if(nextLevelData.housing_space_alt) {
+      dataContent += `<p>Spell Capacity: ${nextLevelData.housing_space_alt}</p>`;
+    }
+    if(nextLevelData.housing_space_siege) {
+      dataContent += `<p>Siege Capacity: ${nextLevelData.housing_space_siege}</p>`;
+    }
+  }
+  else if (type === "troop") {
+    dataContent = "";
+    dataContent += `<img height="100" src="/static/images/${currentData.village}/troops/${currentData.name.toLowerCase().replace(/ /g, "_").replace("'", "")}/avatar.png" alt="${currentData.name}" class="note-image">`;
+    dataContent += `<p>Level: ${currentData.level} -> ${nextLevelData.level}</p>`;
+    dataContent += `<p>Housing Space: ${gameData.housing_space}</p>`;
+    dataContent += `<p>Training Time: ${formatTime(gameData.training_time)}</p>`;
+    dataContent += `<p>Cost: ${nextLevelData?.cost?.toLocaleString() ?? 'null'} ${gameData.upgrade_resource}</p>`;
+    dataContent += `<p>Upgrade Time: ${formatTime(nextLevelData.upgrade_time)}</p>`;
+    dataContent += `<p>Laboratory Level: ${nextLevelData.laboratory_level}</p>`;
+    dataContent += `<p>DPS: ${currentLevelData.dps} -> ${nextLevelData.dps} [+${nextLevelData.dps - currentLevelData.dps}]</p>`;
+    dataContent += `<p>Hitpoints: ${currentLevelData.hitpoints} -> ${nextLevelData.hitpoints} [+${nextLevelData.hitpoints - currentLevelData.hitpoints}]</p>`;
+    dataContent += `<p>Attack Range: ${gameData.attack_range}</p>`;
+    dataContent += `<p>Attack Speed: ${gameData.attack_speed}</p>`;
+  }
+  modalHeader.children[0].innerHTML = `${gameData.name}`;
+  modalBody.innerHTML = dataContent;
+
+  // Show the modal
+  modal.style.display = "block";
+}
+
+// Function to close the data modal
+function closeDataModal() {
+  const modal = document.getElementById("dataModal");
+  modal.style.display = "none";
+}
+
+// Close modal when clicking outside of it
+
 function selectItem(type, item) {
+
+  const noteBuilder = document.getElementById("noteBuilderModal");
+  if (noteBuilder.style.display !== "block"){
+    displayItem(type, item);
+    return;
+  };
+
   const info = JSON.parse(item.dataset.info);
   if (type === "build") {
     const newBuilding = {
@@ -788,6 +944,9 @@ function updateNote() {
 // =================
 
 document.addEventListener("contextmenu", (event) => {
+  const noteBuilder = document.getElementById("noteBuilderModal");
+  if (noteBuilder.style.display !== "block") return;
+
   const notableElement = event.target.closest("[data-info]");
 
   if (notableElement) {
@@ -924,13 +1083,6 @@ function updateUpgradeTimes() {
 // Close New Building Modal on Outside Click
 // ========================================
 
-window.onclick = function (event) {
-  const modal = document.getElementById("newBuildingModal");
-  if (event.target == modal) {
-    closeNewBuildingModal();
-  }
-};
-
 let currentItemName = "";
 let currentItemLevel = 0;
 let currentItemType = "";
@@ -1026,11 +1178,179 @@ function closeGemModal() {
 // Close Gem Modal on Outside Click
 // ==============================
 window.onclick = function (event) {
-  const modal = document.getElementById("gemModal");
-  if (event.target == modal) {
+  // Handle data modal
+  const dataModal = document.getElementById("dataModal");
+  if (event.target == dataModal) {
+    closeDataModal();
+  }
+
+  // Handle new building modal
+  const newBuildingModal = document.getElementById("newBuildingModal");
+  if (event.target == newBuildingModal) {
+    closeNewBuildingModal();
+  }
+
+  // Handle gem modal
+  const gemModal = document.getElementById("gemModal");
+  if (event.target == gemModal) {
     closeGemModal();
   }
 };
+
+function sortBuildings(sortBy) {
+  if (sortBy === "upgradeTime") {
+    // Get all building cards and their data
+    const buildings = document.querySelectorAll(".building-card");
+    const buildingsData = Array.from(buildings).map(b => JSON.parse(b.dataset.info));
+    
+    let currentTownHall;
+    // Get current Town Hall level
+    if(window.appData.requestedVillage === "builder") {
+      currentTownHall = buildingsData.find(b => b.name === 'Builder Hall').level;
+    }
+    else {
+      currentTownHall = buildingsData.find(b => b.name === 'Town Hall').level;
+    }
+    
+    // Calculate upgrade times for each building
+    const upgradeTimes = [];
+    const gameData = window.appData.gameData[window.appData.requestedVillage].buildings;
+
+    for (const building of gameData) {
+      const matchingBuildings = buildingsData.filter(b => b.name === building.name);
+      
+      if (!matchingBuildings.length) continue;
+
+      const levelIndex = building.level_keys.indexOf("level");
+      const buildTimeIndex = building.level_keys.indexOf("build_time");
+      const townHallIndex = building.level_keys.indexOf("town_hall");
+
+      for (const levelData of building.levels) {
+        const buildingsToUpgrade = matchingBuildings.filter(b => 
+          b.level + 1 === levelData[levelIndex]
+        );
+        
+        buildingsToUpgrade.forEach(building => {
+          upgradeTimes.push({
+            id: building.id,
+            level: levelData[levelIndex],
+            time: levelData[townHallIndex] <= currentTownHall ? 
+              levelData[buildTimeIndex] : null
+          });
+        });
+      }
+    }
+
+    // Sort upgrade times (null times at end)
+    const sortedUpgrades = upgradeTimes.sort((a, b) => {
+      if (a.time === null) return 1;
+      if (b.time === null) return -1;
+      return a.time - b.time;
+    });
+
+    // Reorder DOM elements
+    const buildingsGrid = document.getElementById("buildingsGrid");
+    const buildingCards = Array.from(buildingsGrid.children);
+    
+    buildingCards.sort((a, b) => {
+      const aInfo = JSON.parse(a.dataset.info);
+      const bInfo = JSON.parse(b.dataset.info);
+      
+      const aIndex = sortedUpgrades.findIndex(item => item.id === aInfo.id);
+      const bIndex = sortedUpgrades.findIndex(item => item.id === bInfo.id);
+      
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      
+      return aIndex - bIndex;
+    });
+
+    // Update DOM
+    buildingCards.forEach(card => buildingsGrid.removeChild(card));
+    buildingCards.forEach(card => buildingsGrid.appendChild(card));
+  }
+  else if (sortBy === "dpsEfficiency") {
+    // Get all building cards and their data
+    const buildings = document.querySelectorAll(".building-card");
+    const buildingsData = Array.from(buildings).map(b => JSON.parse(b.dataset.info));
+    
+    // Get current Town Hall level
+    if(window.appData.requestedVillage === "builder") {
+      currentTownHall = buildingsData.find(b => b.name === 'Builder Hall').level;
+    }
+    else {
+      currentTownHall = buildingsData.find(b => b.name === 'Town Hall').level;
+    }
+    
+    // Calculate DPS efficiency for each building
+    const dpsEfficiency = [];
+    const gameData = window.appData.gameData[window.appData.requestedVillage].buildings;
+
+    for (const building of gameData) {
+      const matchingBuildings = buildingsData.filter(b => b.name === building.name);
+      
+      if (!matchingBuildings.length) continue;
+
+      const levelIndex = building.level_keys.indexOf("level");
+      const dpsIndex = building.level_keys.indexOf("dps");
+      const buildTimeIndex = building.level_keys.indexOf("build_time");
+      const townHallIndex = building.level_keys.indexOf("town_hall");
+
+      for (const levelData of building.levels) {
+        const buildingsToUpgrade = matchingBuildings.filter(b => 
+          b.level + 1 === levelData[levelIndex]
+        );
+        
+        buildingsToUpgrade.forEach(building => {
+          const hasDPS = levelData[dpsIndex] !== null;
+          const hasBuildTime = levelData[townHallIndex] <= currentTownHall;
+          
+          dpsEfficiency.push({
+            id: building.id,
+            level: levelData[levelIndex],
+            efficiency: hasDPS && hasBuildTime ? 
+              (levelData[dpsIndex] / levelData[buildTimeIndex]) : 
+              (hasDPS ? -1 : -2) // -1 for has DPS but no build time, -2 for no DPS
+          });
+        });
+      }
+    }
+
+    // Sort by DPS efficiency (higher values first, special values at end)
+    const sortedBuildings = dpsEfficiency.sort((a, b) => {
+      if (a.efficiency === -2 && b.efficiency === -2) return 0;
+      if (a.efficiency === -2) return 1;
+      if (b.efficiency === -2) return -1;
+      if (a.efficiency === -1 && b.efficiency === -1) return 0;
+      if (a.efficiency === -1) return 1;
+      if (b.efficiency === -1) return -1;
+      return b.efficiency - a.efficiency; // Higher efficiency first
+    });
+
+    // Reorder DOM elements
+    const buildingsGrid = document.getElementById("buildingsGrid");
+    const buildingCards = Array.from(buildingsGrid.children);
+    
+    buildingCards.sort((a, b) => {
+      const aInfo = JSON.parse(a.dataset.info);
+      const bInfo = JSON.parse(b.dataset.info);
+      
+      const aIndex = sortedBuildings.findIndex(item => item.id === aInfo.id);
+      const bIndex = sortedBuildings.findIndex(item => item.id === bInfo.id);
+      
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      
+      return aIndex - bIndex;
+    });
+
+    // Update DOM
+    buildingCards.forEach(card => buildingsGrid.removeChild(card));
+    buildingCards.forEach(card => buildingsGrid.appendChild(card));
+  }
+}
 
 // Troop and Spell Cards Drag Prevention and Context Menu
 // =====================
@@ -1041,6 +1361,10 @@ document.querySelectorAll(".troop-card").forEach((card) => {
     .addEventListener("dragstart", (e) => e.preventDefault());
 
   card.addEventListener("contextmenu", function (e) {
+
+    const noteBuilder = document.getElementById("noteBuilderModal");
+    if (noteBuilder.style.display !== "block") return;
+
     e.preventDefault();
     selectItem("troop", this);
   });
@@ -1050,6 +1374,8 @@ document.querySelectorAll(".spell-card").forEach((card) => {
     .querySelector("img")
     .addEventListener("dragstart", (e) => e.preventDefault());
   card.addEventListener("contextmenu", function (e) {
+    const noteBuilder = document.getElementById("noteBuilderModal");
+    if (noteBuilder.style.display !== "block") return;
     e.preventDefault();
     selectItem("spell", this);
   });

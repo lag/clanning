@@ -46,7 +46,8 @@ def fast_deep_diff(old: dict, new: dict) -> dict:
                     if changed_values:
                         changes.setdefault('changed', {}).setdefault(path, []).append({
                             'name': name,
-                            'old': {k: old_dict[name][k] for k in changed_values},
+                            # Only include old values if they existed
+                            'old': {k: old_dict[name][k] for k in changed_values if k in old_dict[name]},
                             'new': changed_values
                         })
                     

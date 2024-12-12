@@ -187,15 +187,21 @@
           {% if requested_village == 'builder' %}
           {% set builder_count = builder_count + 1 %}
           {# Add Master Builder for builder base #}
+          {% set has_otto = buildings_data.buildings|selectattr('village', 'equalto', 'builder')|selectattr('name', 'equalto', "O.T.T.O's Outpost")|list|length > 0 %}
+          {% if has_otto %}
+          {% set builder_count = builder_count + 1 %}
+          {# Add O.T.T.O for builder base #}
+          {% endif %}
           {% elif requested_village == 'home' %}
-          {% set has_bob = buildings_data.buildings|selectattr('village', 'equalto', 'home')|selectattr('name', 'equalto', "B.O.B's Hut")|list|length > 0 %} {% if has_bob %} {% set builder_count = builder_count + 1 %} {# Add
-          B.O.B for home village #}
+          {% set has_bob = buildings_data.buildings|selectattr('village', 'equalto', 'home')|selectattr('name', 'equalto', "B.O.B's Hut")|list|length > 0 %}
+          {% if has_bob %}
+          {% set builder_count = builder_count + 1 %}
+          {# Add B.O.B for home village #}
           {% endif %}
           {% endif %}
           {% set upgrading_count = buildings_data.buildings|selectattr('village','equalto', requested_village)|selectattr('isUpgrading', 'equalto', true)|list|length %}
           {% set new_building_count = buildings_data.currentlyUpgrading.building|selectattr('village', 'equalto', requested_village)|selectattr('new', 'equalto', true)|list|length %}
           {% set total_building_count = upgrading_count + new_building_count %}
-
           <div class="status-value">
             {{ total_building_count }} / {{ builder_count }}
           </div>
@@ -311,6 +317,11 @@
           <button onclick="addNewBuilding()" class="add-building-btn">
             Add New Building
           </button>
+          <select id="buildingSortSelect" onchange="sortBuildings(this.value)" class="building-sort">
+            <option value="default">Default Order</option>
+            <option value="upgradeTime">Upgrade Time</option>
+            <option value="dpsEfficiency">DPS Efficiency</option>
+          </select>
         </div>
       </div>
 
@@ -333,8 +344,7 @@
           data-type="build"
         >
           <img loading="lazy"
-          src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/{{building.level}}{%
-          if building.weaponLevel %}-{{building.weaponLevel}}{% endif %}.png"
+          src="/static/images/{{building.village}}/buildings/{{building.name|lower|replace(" ","_")|replace("-","_")|replace("'","")|replace(".",""|trim)}}/{{building.level}}{%if building.weaponLevel %}-{{building.weaponLevel}}{% endif %}.png"
           alt="{{building.name}}" class="building-image">
           <div class="building-info">
             <div class="building-name">
@@ -513,7 +523,7 @@
         {% if requested_village == 'home' and spell.village == 'home' and spell.name in [ "Lightning Spell", "Healing Spell", "Rage Spell", "Jump Spell", "Freeze Spell", "Clone Spell", "Invisibility Spell", "Recall Spell", "Poison Spell", "Earthquake Spell", "Haste Spell", "Skeleton Spell", "Bat Spell", "Overgrowth Spell" ] %}
         {% set latestSpellUpgrade = buildings_data.currentlyUpgrading.spell|selectLatestForVillage(spell.village) %}
         <div
-          class="troop-card {% if latestSpellUpgrade and latestSpellUpgrade.name == spell.name %}upgrading{% endif %}"
+          class="spell-card {% if latestSpellUpgrade and latestSpellUpgrade.name == spell.name %}upgrading{% endif %}"
           onclick="selectItem('spell', this)"
           data-info='{{spell|tojson|safe}}'
           data-type="spell"
@@ -628,6 +638,16 @@
       </form>
     </div>
   </div>
+  <div id="dataModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header" id="dataModalHeader">
+        <h2>Error</h2>
+        <span class="close" onclick="closeDataModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="dataModalBody">
+      </div>
+    </div>
+  </div>
 
   {% endblock %} {% block footer %} {{ super() }}
   <script>
@@ -637,7 +657,8 @@
         historyGraphs: {{ history_graphs|tojson }},
         graphMetadata: {{ GRAPH_METADATA|tojson }},
         requestedVillage: "{{ requested_village }}",
-        GLOBAL_STORAGE_DATA: {{ GLOBAL_STORAGE_DATA|tojson }}
+        GLOBAL_STORAGE_DATA: {{ GLOBAL_STORAGE_DATA|tojson }},
+        gameData: {{ GAMEDATA|tojson|safe }}
     };
   </script>
   <script src="/static/js/player.js"></script>

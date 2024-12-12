@@ -1,4 +1,5 @@
 # Standard library
+import json
 import math
 import os
 from pathlib import Path
@@ -21,7 +22,7 @@ from fastapi.responses import JSONResponse
 app = FastAPI(
     title="clann.ing API",
     description="API for tracking and retrieving player history data",
-    version="0.0.2"
+    version="0.0.3"
 )
 app.add_middleware(
     CORSMiddleware,
@@ -138,6 +139,24 @@ def select_latest_for_village(upgrades, village):
             return upgrade
     return None
 
+def format_time(time):
+    days = time // 86400
+    hours = (time % 86400) // 3600 
+    minutes = (time % 3600) // 60
+    seconds = time % 60
+    
+    formatted_time = ''
+    if days > 0:
+        formatted_time += f'{days}d'
+    if hours > 0:
+        formatted_time += f'{hours}h'
+    if minutes > 0:
+        formatted_time += f'{minutes}m'
+    if seconds > 0:
+        formatted_time += f'{seconds}s'
+        
+    return formatted_time or '0s'
+
 def timeago(timestamp):
     now = datetime.now()
     try:
@@ -180,6 +199,7 @@ templates = Jinja2Templates(directory="templates")
 templates.env.filters["timeago"] = timeago
 templates.env.filters["selectLatestForVillage"] = select_latest_for_village
 templates.env.filters["divide"] = divide_filter
+templates.env.filters["format_time"] = format_time
 
 class InvalidPathError(Exception):pass
 
@@ -721,6 +741,11 @@ async def player_page(player: str, request: Request, village: str = 'home') -> s
                     for spell in player_data['player']['spells']
                 )
             ]
+    
+    GAMEDATA = json.loads(open('static/data/statistics.json','rb').read())
+    for key in list(GAMEDATA.keys()):
+        if key != village:
+            del GAMEDATA[key]
 
     return templates.TemplateResponse(
         "player.html", 
@@ -733,7 +758,8 @@ async def player_page(player: str, request: Request, village: str = 'home') -> s
             "buildings_data": buildings_data,
             "GRAPH_METADATA": GRAPH_METADATA,
             "GLOBAL_BUILDING_DATA": GLOBAL_BUILDING_DATA,
-            "GLOBAL_STORAGE_DATA": GLOBAL_STORAGE_DATA
+            "GLOBAL_STORAGE_DATA": GLOBAL_STORAGE_DATA,
+            "GAMEDATA": GAMEDATA
         }
     )
 
